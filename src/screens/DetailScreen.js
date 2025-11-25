@@ -52,7 +52,7 @@ export default function DetailScreen({ employee = null, onBack, onSaveDetails, o
       try {
         const parsed = JSON.parse(val)
         if (Array.isArray(parsed)) return parsed.filter(Boolean)
-      } catch {}
+      } catch { }
       const sep = val.includes(",") ? "," : val.includes(";") ? ";" : null
       if (sep) return val.split(sep).map((s) => s.trim()).filter(Boolean)
       if (val.includes("\n")) return val.split("\n").map((s) => s.trim()).filter(Boolean)
@@ -89,7 +89,7 @@ export default function DetailScreen({ employee = null, onBack, onSaveDetails, o
     const a = isoToDate(aIso)
     const b = isoToDate(bIso)
     if (!a || !b) return null
-    const diffMs = Math.abs(b.setHours(0,0,0,0) - a.setHours(0,0,0,0))
+    const diffMs = Math.abs(b.setHours(0, 0, 0, 0) - a.setHours(0, 0, 0, 0))
     return Math.round(diffMs / (1000 * 60 * 60 * 24))
   }
 
@@ -118,27 +118,27 @@ export default function DetailScreen({ employee = null, onBack, onSaveDetails, o
     if (!employee || !employee.empid) return
     const id = employee.empid
     const url = `${API_URL.replace(/\/$/, "")}/api/employees/${encodeURIComponent(id)}`
-    ;(async () => {
-      try {
-        const res = await fetch(url, { method: "GET", headers: { "Content-Type": "application/json" } })
-        if (!res.ok) return
-        const data = await res.json()
-        const obj = Array.isArray(data) ? data[0] || data : data
-        if (!obj) return
-        // update only detail fields if local ones are empty to avoid clobbering edits
-        setCurrentProject((cur) => (cur ? cur : obj.current_project || obj.currentProject || ""))
-        setNoCurrentProject((cur) => (cur ? cur : !(obj.current_project || obj.currentProject || "")))
-        setAvailability((cur) => (cur ? cur : obj.availability || "Occupied"))
-        setHoursAvailable((cur) => (cur ? cur : (obj.hours_available || obj.hoursAvailable || "")))
-        setFromDate((cur) => (cur ? cur : (obj.from_date ? obj.from_date.split("T")[0] : (obj.fromDate || ""))))
-        setToDate((cur) => (cur ? cur : (obj.to_date ? obj.to_date.split("T")[0] : (obj.toDate || ""))))
-        setSkills((cur) => (cur && cur.length ? cur : parseListField(obj.current_skills)))
-        setInterests((cur) => (cur && cur.length ? cur : parseListField(obj.interests)))
-        setPreviousProjects((cur) => (cur && cur.length ? cur : parseListField(obj.previous_projects)))
-      } catch (e) {
-        console.warn("DetailScreen background refresh failed:", e)
-      }
-    })()
+      ; (async () => {
+        try {
+          const res = await fetch(url, { method: "GET", headers: { "Content-Type": "application/json" } })
+          if (!res.ok) return
+          const data = await res.json()
+          const obj = Array.isArray(data) ? data[0] || data : data
+          if (!obj) return
+          // update only detail fields if local ones are empty to avoid clobbering edits
+          setCurrentProject((cur) => (cur ? cur : obj.current_project || obj.currentProject || ""))
+          setNoCurrentProject((cur) => (cur ? cur : !(obj.current_project || obj.currentProject || "")))
+          setAvailability((cur) => (cur ? cur : obj.availability || "Occupied"))
+          setHoursAvailable((cur) => (cur ? cur : (obj.hours_available || obj.hoursAvailable || "")))
+          setFromDate((cur) => (cur ? cur : (obj.from_date ? obj.from_date.split("T")[0] : (obj.fromDate || ""))))
+          setToDate((cur) => (cur ? cur : (obj.to_date ? obj.to_date.split("T")[0] : (obj.toDate || ""))))
+          setSkills((cur) => (cur && cur.length ? cur : parseListField(obj.current_skills)))
+          setInterests((cur) => (cur && cur.length ? cur : parseListField(obj.interests)))
+          setPreviousProjects((cur) => (cur && cur.length ? cur : parseListField(obj.previous_projects)))
+        } catch (e) {
+          console.warn("DetailScreen background refresh failed:", e)
+        }
+      })()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [employee && employee.empid])
 
@@ -285,6 +285,7 @@ export default function DetailScreen({ employee = null, onBack, onSaveDetails, o
         current_skills: skills && skills.length ? skills : [],
         interests: interests && interests.length ? interests : [],
         previous_projects: previousProjects && previousProjects.length ? previousProjects : [],
+        updated_at: new Date().toISOString(),
       }
 
       // remove undefined keys (but allow empty arrays/strings passed intentionally)
@@ -349,6 +350,7 @@ export default function DetailScreen({ employee = null, onBack, onSaveDetails, o
           current_skills: serverRecord.current_skills ?? serverRecord.currentSkills ?? [],
           interests: serverRecord.interests ?? [],
           previous_projects: serverRecord.previous_projects ?? serverRecord.previousProjects ?? [],
+          updated_at: serverRecord.updated_at ?? new Date().toISOString(),
         }
         sessionStorage.setItem("user", JSON.stringify(merged))
       } catch (e) {
@@ -780,11 +782,11 @@ export default function DetailScreen({ employee = null, onBack, onSaveDetails, o
 
           {/* Interests (now tag style like skills) */}
           <div style={styles.field}>
-            <label style={styles.label}>Interests</label>
+            <label style={styles.label}>Technical Interests</label>
             <div style={{ display: "flex", gap: 8 }}>
               <input
                 id="interestInput"
-                placeholder="Add interest & press Enter"
+                placeholder="Add technical interests & press Enter"
                 style={styles.input}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {

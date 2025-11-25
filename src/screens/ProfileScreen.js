@@ -21,7 +21,8 @@ export default function ProfileScreen({ employee = null, onBack, onSaveProfile, 
   const CLUSTER = [
     { label: "MEBM", value: "MEBM" },
     { label: "M&T", value: "M&T" },
-    { label: "S&PS", value: "S&PS" },
+    { label: "S&PS Insitu", value: "S&PS Insitu" },
+    { label: "S&PS Exsitu", value: "S&PS Exsitu" },
   ]
 
   const [empid, setEmpid] = useState("")
@@ -161,19 +162,20 @@ export default function ProfileScreen({ employee = null, onBack, onSaveProfile, 
         otherRole: role === "Other" ? otherRole.trim() : "",
         cluster,
         location: location.trim(),
+        updated_at: new Date().toISOString(),
       }
 
       const base = API_URL.replace(/\/$/, "")
       const target = `${base}/api/employees/${encodeURIComponent(originalId)}`
 
-      // Try PUT
+      // Try PATCH
       let res = await fetch(target, {
-        method: "PUT",
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       })
       let body = await readResponse(res)
-      console.log("[ProfileScreen] PUT", res.status, body)
+      console.log("[ProfileScreen] PATCH", res.status, body)
 
       if (!res.ok) {
         throw new Error(`Update failed with status ${res.status}`)
@@ -185,7 +187,7 @@ export default function ProfileScreen({ employee = null, onBack, onSaveProfile, 
       if (!serverRecord) throw new Error("Could not fetch record after save — check backend.")
 
       // Build profile-only object using serverRecord fields (non-destructive)
-      const profileKeys = ["empid", "name", "email", "role", "otherRole", "cluster", "location"]
+      const profileKeys = ["empid", "name", "email", "role", "otherRole", "cluster", "location", "updated_at"]
       const profileOnly = {}
       for (const k of profileKeys) {
         profileOnly[k] =

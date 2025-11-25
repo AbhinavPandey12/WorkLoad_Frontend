@@ -186,10 +186,10 @@ export default function HomeScreen({ onLogout, employee }) {
     if (searchTerm) {
       const lowerSearch = searchTerm.toLowerCase()
       filtered = filtered.filter((emp) =>
-        (emp.name && emp.name.toLowerCase().includes(lowerSearch)) ||
-        (emp.current_skills && Array.isArray(emp.current_skills) && emp.current_skills.some((skill) => skill.toLowerCase().includes(lowerSearch))) ||
-        (emp.location && emp.location.toLowerCase().includes(lowerSearch)) ||
-        (emp.role && emp.role.toLowerCase().includes(lowerSearch))
+        (emp.name && emp.name.toLowerCase().startsWith(lowerSearch)) ||
+        (emp.current_skills && Array.isArray(emp.current_skills) && emp.current_skills.some((skill) => skill.toLowerCase().startsWith(lowerSearch))) ||
+        (emp.location && emp.location.toLowerCase().startsWith(lowerSearch)) ||
+        (emp.role && emp.role.toLowerCase().startsWith(lowerSearch))
       )
     }
 
