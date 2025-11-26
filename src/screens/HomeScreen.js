@@ -50,9 +50,55 @@ export default function HomeScreen({ onLogout, employee }) {
       const data = await response.json()
       console.log("[v0] Employees fetched successfully:", data.length, "items")
 
-      setEmployees(data)
-      setFilteredEmployees(data)
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+
+      const updatesToSync = []
+
+      const sanitizedData = data.map((emp) => {
+        const av = (emp.availability || "").toLowerCase()
+        if (av === "partially available" || av.includes("partial")) {
+          if (emp.to_date) {
+            try {
+              const datePart = emp.to_date.toString().split("T")[0].split(" ")[0]
+              const [y, m, d] = datePart.split("-").map((s) => parseInt(s, 10))
+              const toDateObj = new Date(y, m - 1, d)
+              // If toDate is strictly before today, it's expired
+              if (toDateObj < today) {
+                // Mark for DB update
+                updatesToSync.push(emp)
+                return { ...emp, availability: "Occupied" }
+              }
+            } catch (e) {
+              // ignore parse errors
+            }
+          }
+        }
+        return emp
+      })
+
+      setEmployees(sanitizedData)
+      setFilteredEmployees(sanitizedData)
       setError("")
+
+      // Background sync: Update DB for expired records
+      if (updatesToSync.length > 0) {
+        console.log("[v0] Found expired records to sync:", updatesToSync.length)
+        Promise.allSettled(updatesToSync.map(emp => {
+          const url = `${API_URL}/api/employees/${emp.empid || emp.id}`
+          return fetch(url, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              availability: "Occupied",
+              updated_at: new Date().toISOString()
+            })
+          }).then(res => {
+            if (res.ok) console.log(`[v0] Auto-expired emp ${emp.empid}`)
+            else console.warn(`[v0] Failed to auto-expire emp ${emp.empid}`)
+          })
+        }))
+      }
     } catch (err) {
       console.error("[v0] Employee fetch error:", err)
       setError(`Failed to load employees: ${err.message}. Make sure backend is running on ${API_URL}`)

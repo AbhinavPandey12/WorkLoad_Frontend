@@ -102,8 +102,23 @@ export default function DetailScreen({ employee = null, onBack, onSaveDetails, o
     const cp = employee.current_project || employee.currentProject || ""
     setCurrentProject(cp)
     setNoCurrentProject(!cp)
-    const av = employee.availability || "Occupied"
+
+    let av = employee.availability || "Occupied"
+    // Expiry check
+    if ((av === "Partially Available" || av.toLowerCase().includes("partial")) && (employee.to_date || employee.toDate)) {
+      try {
+        const dStr = employee.to_date ? employee.to_date.split("T")[0] : employee.toDate
+        const parts = dStr.split("-").map(p => parseInt(p, 10))
+        const toDateObj = new Date(parts[0], parts[1] - 1, parts[2])
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+        if (toDateObj < today) {
+          av = "Occupied"
+        }
+      } catch (e) { }
+    }
     setAvailability(av)
+
     setHoursAvailable(employee.hours_available || employee.hoursAvailable || "")
     setFromDate(employee.from_date ? (employee.from_date.split("T")[0]) : (employee.fromDate || ""))
     setToDate(employee.to_date ? (employee.to_date.split("T")[0]) : (employee.toDate || ""))
@@ -127,7 +142,25 @@ export default function DetailScreen({ employee = null, onBack, onSaveDetails, o
           // update only detail fields if local ones are empty to avoid clobbering edits
           setCurrentProject((cur) => (cur ? cur : obj.current_project || obj.currentProject || ""))
           setNoCurrentProject((cur) => (cur ? cur : !(obj.current_project || obj.currentProject || "")))
-          setAvailability((cur) => (cur ? cur : obj.availability || "Occupied"))
+
+          setAvailability((cur) => {
+            if (cur) return cur
+            let av = obj.availability || "Occupied"
+            // Expiry check
+            if ((av === "Partially Available" || av.toLowerCase().includes("partial")) && (obj.to_date || obj.toDate)) {
+              try {
+                const dStr = obj.to_date ? obj.to_date.split("T")[0] : obj.toDate
+                const parts = dStr.split("-").map(p => parseInt(p, 10))
+                const toDateObj = new Date(parts[0], parts[1] - 1, parts[2])
+                const today = new Date()
+                today.setHours(0, 0, 0, 0)
+                if (toDateObj < today) {
+                  av = "Occupied"
+                }
+              } catch (e) { }
+            }
+            return av
+          })
           setHoursAvailable((cur) => (cur ? cur : (obj.hours_available || obj.hoursAvailable || "")))
           setFromDate((cur) => (cur ? cur : (obj.from_date ? obj.from_date.split("T")[0] : (obj.fromDate || ""))))
           setToDate((cur) => (cur ? cur : (obj.to_date ? obj.to_date.split("T")[0] : (obj.toDate || ""))))
