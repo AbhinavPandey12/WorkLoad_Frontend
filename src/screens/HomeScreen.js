@@ -55,27 +55,30 @@ export default function HomeScreen({ onLogout, employee }) {
 
       const updatesToSync = []
 
-      const sanitizedData = data.map((emp) => {
-        const av = (emp.availability || "").toLowerCase()
-        if (av === "partially available" || av.includes("partial")) {
-          if (emp.to_date) {
-            try {
-              const datePart = emp.to_date.toString().split("T")[0].split(" ")[0]
-              const [y, m, d] = datePart.split("-").map((s) => parseInt(s, 10))
-              const toDateObj = new Date(y, m - 1, d)
-              // If toDate is strictly before today, it's expired
-              if (toDateObj < today) {
-                // Mark for DB update
-                updatesToSync.push(emp)
-                return { ...emp, availability: "Occupied" }
+      // Filter out Managers AND apply expiry logic
+      const sanitizedData = data
+        .filter(emp => (emp.role_type || "").toLowerCase() !== "manager") // Exclude Managers
+        .map((emp) => {
+          const av = (emp.availability || "").toLowerCase()
+          if (av === "partially available" || av.includes("partial")) {
+            if (emp.to_date) {
+              try {
+                const datePart = emp.to_date.toString().split("T")[0].split(" ")[0]
+                const [y, m, d] = datePart.split("-").map((s) => parseInt(s, 10))
+                const toDateObj = new Date(y, m - 1, d)
+                // If toDate is strictly before today, it's expired
+                if (toDateObj < today) {
+                  // Mark for DB update
+                  updatesToSync.push(emp)
+                  return { ...emp, availability: "Occupied" }
+                }
+              } catch (e) {
+                // ignore parse errors
               }
-            } catch (e) {
-              // ignore parse errors
             }
           }
-        }
-        return emp
-      })
+          return emp
+        })
 
       setEmployees(sanitizedData)
       setFilteredEmployees(sanitizedData)
@@ -217,7 +220,6 @@ export default function HomeScreen({ onLogout, employee }) {
       filtered = filtered.filter((emp) =>
         (emp.name && emp.name.toLowerCase().startsWith(lowerSearch)) ||
         (emp.current_skills && Array.isArray(emp.current_skills) && emp.current_skills.some((skill) => skill.toLowerCase().startsWith(lowerSearch))) ||
-        (emp.location && emp.location.toLowerCase().startsWith(lowerSearch)) ||
         (emp.role && emp.role.toLowerCase().startsWith(lowerSearch))
       )
     }
@@ -374,7 +376,7 @@ export default function HomeScreen({ onLogout, employee }) {
             <input
               style={styles.input}
               type="text"
-              placeholder="Search by name, skill, location or role..."
+              placeholder="Search by name, skill or role..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -414,7 +416,7 @@ export default function HomeScreen({ onLogout, employee }) {
               <input
                 style={styles.input}
                 type="text"
-                placeholder="Search by name, skill, location or role..."
+                placeholder="Search by name, skill or role..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -456,7 +458,13 @@ export default function HomeScreen({ onLogout, employee }) {
       <div style={styles.grid}>
         {filteredEmployees.length > 0 ? (
           filteredEmployees.map((emp) => (
-            <EmployeeCard key={emp.empid || emp.id || emp.name} employee={emp} getInitials={getInitials} />
+            <EmployeeCard
+              key={emp.empid || emp.id || emp.name}
+              employee={emp}
+              getInitials={getInitials}
+              currentUser={employee}
+              onRefresh={fetchEmployees}
+            />
           ))
         ) : (
           <div style={styles.noResults}>

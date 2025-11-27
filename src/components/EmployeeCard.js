@@ -1,7 +1,14 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { API_URL } from "../config"
 
-export default function EmployeeCard({ employee = {}, getInitials }) {
+export default function EmployeeCard({ employee = {}, getInitials, currentUser, onRefresh }) {
   const [expanded, setExpanded] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+  const [saving, setSaving] = useState(false)
+
+  // Form State
+  const [formData, setFormData] = useState({})
+  const [dateError, setDateError] = useState("")
 
   const {
     name = "Unknown",
@@ -9,14 +16,29 @@ export default function EmployeeCard({ employee = {}, getInitials }) {
     current_skills,
     interests,
     previous_projects,
-    location,
     role,
     email,
     hours_available,
     from_date,
     to_date,
-    updated_at, // expected timestamp string or Date or number
+    updated_at,
   } = employee || {}
+
+  // Initialize form data when entering edit mode
+  useEffect(() => {
+    if (isEditing) {
+      setFormData({
+        current_project: employee.current_project || employee.currentProject || "",
+        availability: employee.availability || "Occupied",
+        hours_available: employee.hours_available || employee.hoursAvailable || "",
+        from_date: employee.from_date ? employee.from_date.split("T")[0] : (employee.fromDate || ""),
+        to_date: employee.to_date ? employee.to_date.split("T")[0] : (employee.toDate || ""),
+        current_skills: parseListField(employee.current_skills),
+        interests: parseListField(employee.interests),
+        previous_projects: parseListField(employee.previous_projects),
+      })
+    }
+  }, [isEditing, employee])
 
   // robust parsing for SheetDB
   const parseListField = (val) => {
@@ -78,9 +100,6 @@ export default function EmployeeCard({ employee = {}, getInitials }) {
       if (/^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}/.test(s)) {
         s = s.replace(/\s+/, "T")
       }
-      // Treat as UTC if no timezone info is present (check for Z or offset like +05:30)
-      // Note: checking includes("-") is bad because date has dashes. 
-      // We check if it ends with Z or has a timezone offset pattern at the end.
       const hasTimeZone = /Z$|[+-]\d{2}:?\d{2}$/.test(s);
       if (!hasTimeZone) {
         s += "Z"
@@ -134,7 +153,57 @@ export default function EmployeeCard({ employee = {}, getInitials }) {
   }
 
   const updatedText = getUpdatedText(updated_at)
-  // ---------- end new code ----------
+
+  // --- Edit Handlers ---
+  const handleSave = async (e) => {
+    e.stopPropagation()
+    setSaving(true)
+    try {
+      const payload = {
+        ...formData,
+        updated_at: new Date().toISOString(),
+        // Ensure numbers
+        hours_available: formData.availability === "Partially Available" ? Number(formData.hours_available) : null,
+        from_date: formData.availability === "Partially Available" ? (formData.from_date || null) : null,
+        to_date: formData.availability === "Partially Available" ? (formData.to_date || null) : null,
+      }
+
+      // Clean undefined
+      Object.keys(payload).forEach(k => payload[k] === undefined && delete payload[k])
+
+      const url = `${API_URL}/api/employees/${employee.empid || employee.id}`
+      const res = await fetch(url, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      })
+
+      if (!res.ok) throw new Error("Failed to update")
+
+      setIsEditing(false)
+      if (onRefresh) onRefresh()
+      alert("Employee details updated!")
+    } catch (err) {
+      alert("Update failed: " + err.message)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const addTag = (field, val) => {
+    if (!val) return
+    setFormData(prev => ({
+      ...prev,
+      [field]: [...(prev[field] || []), val]
+    }))
+  }
+
+  const removeTag = (field, val) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: (prev[field] || []).filter(x => x !== val)
+    }))
+  }
 
   const styles = {
     card: {
@@ -152,7 +221,7 @@ export default function EmployeeCard({ employee = {}, getInitials }) {
       boxShadow: "0 10px 24px rgba(0,0,0,0.09)",
     },
     header: {
-      padding: "16px", // slightly smaller padding for mobile friendliness
+      padding: "16px",
       background: "#fbfbfd",
       borderBottom: expanded ? "1px solid #f0f0f5" : "none",
     },
@@ -274,7 +343,6 @@ export default function EmployeeCard({ employee = {}, getInitials }) {
       marginRight: "8px",
       flexShrink: 0,
     },
-    // styles for small label rows (consistent font)
     detailRowText: {
       fontSize: "13px",
       color: "#374151",
@@ -284,9 +352,95 @@ export default function EmployeeCard({ employee = {}, getInitials }) {
       fontWeight: 600,
       marginRight: 8,
     },
+    // Edit Styles
+    editContainer: {
+      display: "flex",
+      flexDirection: "column",
+      gap: "16px",
+      padding: "4px",
+    },
+    editGrid: {
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", // Smaller min-width for better flexing
+      gap: "12px",
+    },
+    editField: {
+      display: "flex",
+      flexDirection: "column",
+      gap: "6px",
+    },
+    editInput: {
+      width: "100%",
+      boxSizing: "border-box", // Critical for responsive width
+      padding: "10px 12px", // Slightly more compact
+      borderRadius: "8px",
+      border: "1px solid #d1d5db",
+      fontSize: "13px", // Slightly smaller font
+      color: "#111827",
+      background: "#ffffff",
+      transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+      outline: "none",
+      boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",
+    },
+    editInputFocus: {
+      borderColor: "#2563eb", // Blue-600
+      boxShadow: "0 0 0 4px rgba(37, 99, 235, 0.1)", // Soft ring
+    },
+    editLabel: {
+      fontSize: "11px",
+      fontWeight: "700",
+      color: "#6b7280",
+      textTransform: "uppercase",
+      letterSpacing: "0.8px",
+      marginBottom: "4px",
+    },
+    editSectionTitle: {
+      fontSize: "13px",
+      fontWeight: "700",
+      color: "#374151",
+      marginBottom: "16px",
+      borderBottom: "1px solid #e5e7eb",
+      paddingBottom: "8px",
+      textTransform: "uppercase",
+      letterSpacing: "0.5px",
+    },
+    editBtn: {
+      padding: "10px 20px",
+      borderRadius: "10px", // Slightly rounded like others
+      border: "none",
+      background: "linear-gradient(90deg, #0078d4, #005fa3)", // Matching DetailScreen
+      color: "white",
+      fontSize: "13px",
+      fontWeight: "700", // Bolder like others
+      cursor: "pointer",
+      boxShadow: "0 4px 12px rgba(0, 120, 212, 0.2)", // Matching shadow tone
+      transition: "transform 0.1s ease, box-shadow 0.1s ease",
+    },
+    cancelBtn: {
+      padding: "10px 20px",
+      borderRadius: "10px",
+      border: "1px solid #e2e8f0",
+      background: "#ffffff",
+      color: "#475569",
+      fontSize: "13px",
+      fontWeight: "700",
+      cursor: "pointer",
+      transition: "all 0.2s ease",
+    },
+    partialBox: {
+      background: "#f8fafc", // Very subtle slate
+      border: "1px solid #e2e8f0",
+      borderRadius: "12px",
+      padding: "20px",
+      display: "flex",
+      flexDirection: "column",
+      gap: "16px",
+      marginTop: "8px",
+    }
   }
 
   const handleCardClick = (e) => {
+    if (isEditing) return // Don't collapse if editing
     e.stopPropagation()
     setExpanded(!expanded)
   }
@@ -300,12 +454,7 @@ export default function EmployeeCard({ employee = {}, getInitials }) {
     </svg>
   )
 
-  const IconPin = () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path d="M21 10c0 6-9 13-9 13S3 16 3 10a9 9 0 1 1 18 0z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M12 11.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z" fill="currentColor" />
-    </svg>
-  )
+
 
   const IconMail = () => (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -345,6 +494,9 @@ export default function EmployeeCard({ employee = {}, getInitials }) {
 
   const isPartial = statusKey === "partially available" || statusKey === "partially" || statusKey === "partial"
 
+  // Check if manager
+  const isManager = currentUser && (currentUser.role_type || "").toLowerCase() === "manager"
+
   return (
     <div
       style={styles.card}
@@ -359,7 +511,7 @@ export default function EmployeeCard({ employee = {}, getInitials }) {
       onKeyDown={(e) => (e.key === "Enter" || e.key === " " ? handleCardClick(e) : null)}
       aria-expanded={expanded}
     >
-      {/* Availability Strip - Thinner & Rounded Top */}
+      {/* Availability Strip */}
       <div style={{ height: "4px", width: "100%", background: statusColor, borderTopLeftRadius: "12px", borderTopRightRadius: "12px" }} />
 
       {/* header: name, role, availability */}
@@ -410,98 +562,251 @@ export default function EmployeeCard({ employee = {}, getInitials }) {
 
       {/* expanded content */}
       {expanded && (
-        <div style={styles.body}>
-          {/* If partially available show Hours/From/To right away (top of expanded content) */}
-          {isPartial && (
-            <div style={{ marginBottom: 12 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                <span style={styles.iconWrap}>
-                  <IconClock />
-                </span>
-                <div style={{ display: "flex", flexDirection: "column" }}>
-                  <div style={styles.detailRowText}>
-                    <span style={styles.detailLabelStrong}>Hours:</span>
-                    <span>{hours_available ? `${hours_available} hours/day` : "Not specified"}</span>
-                  </div>
-                  <div style={styles.detailRowText}>
-                    <span style={styles.detailLabelStrong}>From:</span>
-                    <span>{from_date ? formatDateDisplay(from_date) : "—"}</span>
-                  </div>
-                  <div style={styles.detailRowText}>
-                    <span style={styles.detailLabelStrong}>To:</span>
-                    <span>{to_date ? formatDateDisplay(to_date) : "—"}</span>
-                  </div>
+        <div style={styles.body} onClick={e => e.stopPropagation()}>
+          {isEditing ? (
+            // --- EDIT MODE ---
+            // --- EDIT MODE ---
+            <div style={styles.editContainer}>
+              <div style={styles.editGrid}>
+                <div style={styles.editField}>
+                  <label style={styles.editLabel}>Current Project</label>
+                  <input
+                    style={styles.editInput}
+                    value={formData.current_project}
+                    onChange={e => setFormData({ ...formData, current_project: e.target.value })}
+                    placeholder="Project Name"
+                  />
+                </div>
+
+                <div style={styles.editField}>
+                  <label style={styles.editLabel}>Availability</label>
+                  <select
+                    style={styles.editInput}
+                    value={formData.availability}
+                    onChange={e => setFormData({ ...formData, availability: e.target.value })}
+                  >
+                    <option value="Available">Available</option>
+                    <option value="Occupied">Occupied</option>
+                    <option value="Partially Available">Partially Available</option>
+                  </select>
                 </div>
               </div>
-            </div>
-          )}
 
-          {/* Location */}
-          {location && (
-            <div style={styles.section}>
-              <div style={styles.infoRow}>
-                <span style={styles.iconWrap}>
-                  <IconPin />
-                </span>
-                <span style={{ fontSize: "13px", color: "#374151" }}>{location}</span>
+              {formData.availability === "Partially Available" && (
+                <div style={styles.partialBox}>
+                  <div style={styles.editSectionTitle}>Partial Availability Details</div>
+                  <div style={styles.editGrid}>
+                    <div style={styles.editField}>
+                      <label style={styles.editLabel}>Hours/Day</label>
+                      <input
+                        style={styles.editInput}
+                        type="number"
+                        placeholder="e.g. 4"
+                        value={formData.hours_available}
+                        onChange={e => setFormData({ ...formData, hours_available: e.target.value })}
+                      />
+                    </div>
+                    <div style={styles.editField}>
+                      <label style={styles.editLabel}>From Date</label>
+                      <input
+                        style={styles.editInput}
+                        type="date"
+                        value={formData.from_date}
+                        onChange={e => setFormData({ ...formData, from_date: e.target.value })}
+                      />
+                    </div>
+                    <div style={styles.editField}>
+                      <label style={styles.editLabel}>To Date</label>
+                      <input
+                        style={styles.editInput}
+                        type="date"
+                        value={formData.to_date}
+                        onChange={e => setFormData({ ...formData, to_date: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Skills Edit */}
+              <div style={styles.editField}>
+                <label style={styles.editLabel}>Skills</label>
+                <div style={styles.tags}>
+                  {(formData.current_skills || []).map(s => (
+                    <span key={s} style={styles.tag}>
+                      {s} <span style={{ cursor: 'pointer', fontWeight: 'bold', marginLeft: 4 }} onClick={() => removeTag('current_skills', s)}>×</span>
+                    </span>
+                  ))}
+                </div>
+                <input
+                  style={{ ...styles.editInput, marginTop: 8 }}
+                  placeholder="Type skill and press Enter..."
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      addTag('current_skills', e.target.value.trim())
+                      e.target.value = ''
+                    }
+                  }}
+                />
+              </div>
+
+              {/* Interests Edit */}
+              <div style={styles.editField}>
+                <label style={styles.editLabel}>Interests</label>
+                <div style={styles.tags}>
+                  {(formData.interests || []).map(i => (
+                    <span key={i} style={{ ...styles.tag, background: "#f3e5f5", color: "#7b1fa2" }}>
+                      {i} <span style={{ cursor: 'pointer', fontWeight: 'bold', marginLeft: 4 }} onClick={() => removeTag('interests', i)}>×</span>
+                    </span>
+                  ))}
+                </div>
+                <input
+                  style={{ ...styles.editInput, marginTop: 8 }}
+                  placeholder="Type interest and press Enter..."
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      addTag('interests', e.target.value.trim())
+                      e.target.value = ''
+                    }
+                  }}
+                />
+              </div>
+
+              {/* Previous Projects Edit */}
+              <div style={styles.editField}>
+                <label style={styles.editLabel}>Previous Projects</label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  {(formData.previous_projects || []).map(p => (
+                    <div key={p} style={{ fontSize: '13px', color: '#334155', display: 'flex', alignItems: 'center', gap: 8 }}>
+                      • {p} <span style={{ cursor: 'pointer', color: '#ef4444', fontWeight: 'bold' }} onClick={() => removeTag('previous_projects', p)}>×</span>
+                    </div>
+                  ))}
+                </div>
+                <input
+                  style={{ ...styles.editInput, marginTop: 8 }}
+                  placeholder="Type project and press Enter..."
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      addTag('previous_projects', e.target.value.trim())
+                      e.target.value = ''
+                    }
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: "12px", marginTop: "16px", borderTop: "1px solid #f1f5f9", paddingTop: "16px" }}>
+                <button style={styles.cancelBtn} onClick={() => setIsEditing(false)} disabled={saving}>
+                  Cancel
+                </button>
+                <button style={styles.editBtn} onClick={handleSave} disabled={saving}>
+                  {saving ? "Saving..." : "Save Changes"}
+                </button>
               </div>
             </div>
-          )}
+          ) : (
+            // --- VIEW MODE ---
+            <>
+              {/* If partially available show Hours/From/To right away */}
+              {isPartial && (
+                <div style={{ marginBottom: 12 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                    <span style={styles.iconWrap}>
+                      <IconClock />
+                    </span>
+                    <div style={{ display: "flex", flexDirection: "column" }}>
+                      <div style={styles.detailRowText}>
+                        <span style={styles.detailLabelStrong}>Hours:</span>
+                        <span>{hours_available ? `${hours_available} hours/day` : "Not specified"}</span>
+                      </div>
+                      <div style={styles.detailRowText}>
+                        <span style={styles.detailLabelStrong}>From:</span>
+                        <span>{from_date ? formatDateDisplay(from_date) : "—"}</span>
+                      </div>
+                      <div style={styles.detailRowText}>
+                        <span style={styles.detailLabelStrong}>To:</span>
+                        <span>{to_date ? formatDateDisplay(to_date) : "—"}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
-          {/* Email */}
-          {email && (
-            <div style={styles.section}>
-              <div style={styles.infoRow}>
-                <span style={styles.iconWrap}>
-                  <IconMail />
-                </span>
-                <a href={`mailto:${email}`} style={{ color: "#0b5fa5", textDecoration: "none", fontSize: "13px" }}>
-                  {email}
-                </a>
-              </div>
-            </div>
-          )}
 
-          {/* Skills */}
-          {safeSkills && safeSkills.length > 0 && (
-            <div style={styles.section}>
-              <div style={styles.sectionTitle}>Skills</div>
-              <div style={styles.tags}>
-                {safeSkills.map((skill) => (
-                  <span key={skill} style={styles.tag}>
-                    {skill}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
 
-          {/* Interests */}
-          {safeInterests && safeInterests.length > 0 && (
-            <div style={styles.section}>
-              <div style={styles.sectionTitle}>Interests</div>
-              <div style={styles.tags}>
-                {safeInterests.map((interest) => (
-                  <span key={interest} style={{ ...styles.tag, background: "#f3e5f5", color: "#7b1fa2" }}>
-                    {interest}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
+              {/* Email */}
+              {email && (
+                <div style={styles.section}>
+                  <div style={styles.infoRow}>
+                    <span style={styles.iconWrap}>
+                      <IconMail />
+                    </span>
+                    <a href={`mailto:${email}`} style={{ color: "#0b5fa5", textDecoration: "none", fontSize: "13px" }}>
+                      {email}
+                    </a>
+                  </div>
+                </div>
+              )}
 
-          {/* Previous projects */}
-          {safePrevious && safePrevious.length > 0 && (
-            <div style={styles.section}>
-              <div style={styles.sectionTitle}>Previous projects</div>
-              <ul style={{ margin: 0, paddingLeft: 20, fontSize: "13px", color: "#374151" }}>
-                {safePrevious.map((proj, idx) => (
-                  <li key={idx} style={{ marginBottom: 6 }}>
-                    {proj}
-                  </li>
-                ))}
-              </ul>
-            </div>
+              {/* Skills */}
+              {safeSkills && safeSkills.length > 0 && (
+                <div style={styles.section}>
+                  <div style={styles.sectionTitle}>Skills</div>
+                  <div style={styles.tags}>
+                    {safeSkills.map((skill) => (
+                      <span key={skill} style={styles.tag}>
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Interests */}
+              {safeInterests && safeInterests.length > 0 && (
+                <div style={styles.section}>
+                  <div style={styles.sectionTitle}>Interests</div>
+                  <div style={styles.tags}>
+                    {safeInterests.map((interest) => (
+                      <span key={interest} style={{ ...styles.tag, background: "#f3e5f5", color: "#7b1fa2" }}>
+                        {interest}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Previous projects */}
+              {safePrevious && safePrevious.length > 0 && (
+                <div style={styles.section}>
+                  <div style={styles.sectionTitle}>Previous projects</div>
+                  <ul style={{ margin: 0, paddingLeft: 20, fontSize: "13px", color: "#374151" }}>
+                    {safePrevious.map((proj, idx) => (
+                      <li key={idx} style={{ marginBottom: 6 }}>
+                        {proj}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Manager Edit Button */}
+              {isManager && (
+                <div style={{ marginTop: 20, borderTop: '1px solid #eee', paddingTop: 12, textAlign: 'right' }}>
+                  <button
+                    style={styles.editBtn}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setIsEditing(true)
+                    }}
+                  >
+                    Edit Details
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       )}

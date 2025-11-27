@@ -32,7 +32,6 @@ export default function ProfileScreen({ employee = null, onBack, onSaveProfile, 
   const [role, setRole] = useState("")
   const [otherRole, setOtherRole] = useState("")
   const [cluster, setCluster] = useState("")
-  const [location, setLocation] = useState("")
 
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState("")
@@ -63,7 +62,6 @@ export default function ProfileScreen({ employee = null, onBack, onSaveProfile, 
     setRole(employee.role || "")
     setOtherRole(employee.otherRole || employee.other_role || "")
     setCluster(employee.cluster || "")
-    setLocation(employee.location || "")
   }, [employee])
 
   // Non-destructive background refresh (only fill empty local fields)
@@ -84,7 +82,6 @@ export default function ProfileScreen({ employee = null, onBack, onSaveProfile, 
           setRole((cur) => (cur ? cur : obj.role || ""))
           setOtherRole((cur) => (cur ? cur : obj.otherRole || obj.other_role || ""))
           setCluster((cur) => (cur ? cur : obj.cluster || ""))
-          setLocation((cur) => (cur ? cur : obj.location || ""))
         } catch (e) {
           console.warn("Profile refresh failed:", e)
         }
@@ -160,7 +157,6 @@ export default function ProfileScreen({ employee = null, onBack, onSaveProfile, 
         role: role === "Other" ? otherRole.trim() : role,
         otherRole: role === "Other" ? otherRole.trim() : "",
         cluster,
-        location: location.trim(),
         updated_at: new Date().toISOString(),
       }
 
@@ -186,7 +182,7 @@ export default function ProfileScreen({ employee = null, onBack, onSaveProfile, 
       if (!serverRecord) throw new Error("Could not fetch record after save — check backend.")
 
       // Build profile-only object using serverRecord fields (non-destructive)
-      const profileKeys = ["empid", "name", "email", "role", "otherRole", "cluster", "location", "updated_at"]
+      const profileKeys = ["empid", "name", "email", "role", "otherRole", "cluster", "updated_at"]
       const profileOnly = {}
       for (const k of profileKeys) {
         profileOnly[k] =
@@ -355,10 +351,7 @@ export default function ProfileScreen({ employee = null, onBack, onSaveProfile, 
             </select>
           </div>
 
-          <div style={styles.field}>
-            <label style={styles.label}>Location</label>
-            <input style={styles.input} value={location} onChange={(e) => setLocation(e.target.value)} />
-          </div>
+
         </div>
 
         <div style={styles.actions}>
