@@ -5,7 +5,11 @@ import LoginScreen from "./screens/LoginScreen"
 import HomeScreen from "./screens/HomeScreen"
 import ProfileScreen from "./screens/ProfileScreen"
 import DetailScreen from "./screens/DetailScreen"
+import DashboardPage from "./screens/DashboardPage"
 import ResetPasswordScreen from "./screens/ResetPasswordScreen"
+
+import ActivitiesScreen from "./screens/ActivitiesScreen"
+import InlineActivitiesScreen from "./screens/InlineActivitiesScreen"
 
 export default function App() {
   // initialize from sessionStorage so reload keeps logged-in user
@@ -19,13 +23,13 @@ export default function App() {
   })()
 
   const [user, setUser] = useState(initialUser)
-  console.log("[App] Current user state:", user);
+  // console.log("[App] Current user state:", user);
 
   const handleLogin = (userData) => {
     try {
       sessionStorage.setItem("user", JSON.stringify(userData || {}))
     } catch (e) {
-      console.warn("sessionStorage write failed", e)
+      // console.warn("sessionStorage write failed", e)
     }
     setUser(userData)
   }
@@ -50,7 +54,7 @@ export default function App() {
         const existing = JSON.parse(sessionStorage.getItem("user") || "{}")
         sessionStorage.setItem("user", JSON.stringify({ ...existing, ...(profileOnly || {}) }))
       } catch (e) {
-        console.warn("sessionStorage update failed:", e)
+        // console.warn("sessionStorage update failed:", e)
       }
       return merged
     })
@@ -62,7 +66,19 @@ export default function App() {
       <Routes>
         <Route
           path="/"
-          element={!user ? <LoginScreen onLogin={(u) => handleLogin(u)} /> : <Navigate to={(user.role_type || "").trim().toLowerCase() === "manager" ? "/home" : "/details"} />}
+          element={!user ? <LoginScreen onLogin={(u) => handleLogin(u)} /> : <Navigate to={(user.role_type || "").trim().toLowerCase() === "manager" ? "/dashboard" : "/details"} />}
+        />
+
+        {/* /dashboard route for Managers */}
+        <Route
+          path="/dashboard"
+          element={
+            user ? (
+              (user.role_type || "").trim().toLowerCase() === "manager" ? <DashboardPage /> : <Navigate to="/details" />
+            ) : (
+              <Navigate to="/" />
+            )
+          }
         />
 
         {/* /home route - keeps previous UX where Profile is toggled inside home */}
@@ -99,6 +115,26 @@ export default function App() {
           }
         />
 
+        {/* Activities route wrapper (Manager only) */}
+        <Route
+          path="/activities"
+          element={
+            user ? (
+              (user.role_type || "").trim().toLowerCase() === "manager" ? <ActivitiesScreen onLogout={handleLogout} /> : <Navigate to="/home" />
+            ) : (
+              <Navigate to="/" />
+            )
+          }
+        />
+
+        {/* Inline Activities route wrapper (User only) */}
+        <Route
+          path="/inline-activities"
+          element={
+            user ? <InlineActivitiesScreen onLogout={handleLogout} /> : <Navigate to="/" />
+          }
+        />
+
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>
@@ -122,7 +158,7 @@ function DetailsRoute({ user, mergeProfileIntoUser, setUser, onLogout }) {
       const existing = JSON.parse(sessionStorage.getItem("user") || "{}")
       sessionStorage.setItem("user", JSON.stringify({ ...existing, ...(serverRecord || {}) }))
     } catch (e) {
-      console.warn("Failed to update sessionStorage after details save", e)
+      // console.warn("Failed to update sessionStorage after details save", e)
     }
     navigate("/home")
   }

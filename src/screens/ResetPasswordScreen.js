@@ -60,7 +60,7 @@ export default function ResetPasswordScreen({ user, onLogout }) {
             });
 
             const data = await response.json();
-            console.log("[ResetPassword] Response:", response.status, data);
+            // console.log("[ResetPassword] Response:", response.status, data);
 
             if (response.ok && data.success) {
                 setMessage("Password updated successfully! Redirecting to login...");
@@ -77,7 +77,7 @@ export default function ResetPasswordScreen({ user, onLogout }) {
                 setError(data.error || "Failed to update password.");
             }
         } catch (err) {
-            console.error("Reset password error:", err);
+            // console.error("Reset password error:", err);
             setError("An error occurred. Please try again.");
         } finally {
             setLoading(false);
@@ -88,8 +88,11 @@ export default function ResetPasswordScreen({ user, onLogout }) {
         container: {
             minHeight: "100vh",
             background: "linear-gradient(180deg, #f4f7fb 0%, #ffffff 40%)",
-            padding: isMobile ? "8px 12px" : "12px 20px",
+            padding: "0", // Removed padding for full width Navbar
             fontFamily: "Segoe UI, Tahoma, sans-serif",
+        },
+        innerContainer: {
+            padding: isMobile ? "8px 12px" : "12px 20px",
         },
         content: {
             maxWidth: "500px",
@@ -172,50 +175,52 @@ export default function ResetPasswordScreen({ user, onLogout }) {
     return (
         <div style={styles.container}>
             <Navbar user={user} onLogout={onLogout} title="Reset Password" />
-            <div style={styles.content}>
-                <h2 style={styles.title}>Change Password</h2>
+            <div style={styles.innerContainer}>
+                <div style={styles.content}>
+                    <h2 style={styles.title}>Change Password</h2>
 
-                {message && <div style={styles.message}>{message}</div>}
-                {error && <div style={styles.error}>{error}</div>}
+                    {message && <div style={styles.message}>{message}</div>}
+                    {error && <div style={styles.error}>{error}</div>}
 
-                <form onSubmit={handleSubmit}>
-                    <div style={styles.formGroup}>
-                        <label style={styles.label}>Current Password</label>
-                        <input
-                            type="password"
-                            value={currentPassword}
-                            onChange={(e) => setCurrentPassword(e.target.value)}
-                            style={styles.input}
-                            disabled={loading}
-                            placeholder="Enter current password"
-                        />
-                    </div>
-                    <div style={styles.formGroup}>
-                        <label style={styles.label}>New Password</label>
-                        <input
-                            type="password"
-                            value={newPassword}
-                            onChange={(e) => setNewPassword(e.target.value)}
-                            style={styles.input}
-                            disabled={loading}
-                            placeholder="Enter new password"
-                        />
-                    </div>
-                    <div style={styles.formGroup}>
-                        <label style={styles.label}>Confirm Password</label>
-                        <input
-                            type="password"
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            style={styles.input}
-                            disabled={loading}
-                            placeholder="Confirm new password"
-                        />
-                    </div>
-                    <button type="submit" style={styles.button} disabled={loading}>
-                        {loading ? "Updating..." : "Update Password"}
-                    </button>
-                </form>
+                    <form onSubmit={handleSubmit}>
+                        <div style={styles.formGroup}>
+                            <label style={styles.label}>Current Password</label>
+                            <input
+                                type="password"
+                                value={currentPassword}
+                                onChange={(e) => setCurrentPassword(e.target.value)}
+                                style={styles.input}
+                                disabled={loading}
+                                placeholder="Enter current password"
+                            />
+                        </div>
+                        <div style={styles.formGroup}>
+                            <label style={styles.label}>New Password</label>
+                            <input
+                                type="password"
+                                value={newPassword}
+                                onChange={(e) => setNewPassword(e.target.value)}
+                                style={styles.input}
+                                disabled={loading}
+                                placeholder="Enter new password"
+                            />
+                        </div>
+                        <div style={styles.formGroup}>
+                            <label style={styles.label}>Confirm Password</label>
+                            <input
+                                type="password"
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                style={styles.input}
+                                disabled={loading}
+                                placeholder="Confirm new password"
+                            />
+                        </div>
+                        <button type="submit" style={styles.button} disabled={loading}>
+                            {loading ? "Updating..." : "Update Password"}
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     );

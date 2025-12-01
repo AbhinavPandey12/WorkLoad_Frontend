@@ -65,8 +65,8 @@ export default function Navbar_Manager({ user, onLogout, title = "Employee Dashb
             background: "linear-gradient(90deg, #016db9 0%, #0078d4 100%)",
             color: "white",
             padding: isMobile ? "10px 12px" : "12px 16px",
-            borderRadius: "8px",
-            marginBottom: "16px",
+            borderRadius: "0", // Full width
+            marginBottom: "0", // Flush with container
             gap: "12px",
             position: "relative",
         },
@@ -196,6 +196,25 @@ export default function Navbar_Manager({ user, onLogout, title = "Employee Dashb
                     style={styles.drawerMenuItem}
                     onClick={() => {
                         setMenuOpen(false)
+                        navigate("/dashboard")
+                    }}
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.background = "rgba(255,255,255,0.1)"
+                        e.currentTarget.style.borderLeft = "4px solid #ffffff"
+                        e.currentTarget.style.color = "#ffffff"
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.background = "transparent"
+                        e.currentTarget.style.borderLeft = "4px solid transparent"
+                        e.currentTarget.style.color = "rgba(255,255,255,0.9)"
+                    }}
+                >
+                    <span>📊</span> Dashboard
+                </div>
+                <div
+                    style={styles.drawerMenuItem}
+                    onClick={() => {
+                        setMenuOpen(false)
                         navigate("/home")
                     }}
                     onMouseEnter={(e) => {
@@ -209,7 +228,45 @@ export default function Navbar_Manager({ user, onLogout, title = "Employee Dashb
                         e.currentTarget.style.color = "rgba(255,255,255,0.9)"
                     }}
                 >
-                    <span>🏠</span> Home
+                    <span>🏠</span> Employee Directory
+                </div>
+                <div
+                    style={styles.drawerMenuItem}
+                    onClick={() => {
+                        setMenuOpen(false)
+                        navigate("/activities")
+                    }}
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.background = "rgba(255,255,255,0.1)"
+                        e.currentTarget.style.borderLeft = "4px solid #ffffff"
+                        e.currentTarget.style.color = "#ffffff"
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.background = "transparent"
+                        e.currentTarget.style.borderLeft = "4px solid transparent"
+                        e.currentTarget.style.color = "rgba(255,255,255,0.9)"
+                    }}
+                >
+                    <span>📅</span> Activities
+                </div>
+                <div
+                    style={styles.drawerMenuItem}
+                    onClick={() => {
+                        setMenuOpen(false)
+                        navigate("/inline-activities")
+                    }}
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.background = "rgba(255,255,255,0.1)"
+                        e.currentTarget.style.borderLeft = "4px solid #ffffff"
+                        e.currentTarget.style.color = "#ffffff"
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.background = "transparent"
+                        e.currentTarget.style.borderLeft = "4px solid transparent"
+                        e.currentTarget.style.color = "rgba(255,255,255,0.9)"
+                    }}
+                >
+                    <span>📋</span> Inline Activities
                 </div>
                 <div
                     style={styles.drawerMenuItem}

@@ -65,8 +65,8 @@ export default function Navbar_IC({ user, onLogout, title = "Employee Dashboard"
             background: "linear-gradient(90deg, #016db9 0%, #0078d4 100%)",
             color: "white",
             padding: isMobile ? "10px 12px" : "12px 16px",
-            borderRadius: "8px",
-            marginBottom: "16px",
+            borderRadius: "0", // Full width
+            marginBottom: "0", // Flush with container
             gap: "12px",
             position: "relative",
         },
@@ -192,6 +192,7 @@ export default function Navbar_IC({ user, onLogout, title = "Employee Dashboard"
                 <div style={styles.drawerHeader}>
                     <h2 style={styles.drawerTitle}>Menu</h2>
                 </div>
+
                 <div
                     style={styles.drawerMenuItem}
                     onClick={() => {
@@ -210,6 +211,25 @@ export default function Navbar_IC({ user, onLogout, title = "Employee Dashboard"
                     }}
                 >
                     <span>📋</span> Details
+                </div>
+                <div
+                    style={styles.drawerMenuItem}
+                    onClick={() => {
+                        setMenuOpen(false)
+                        navigate("/inline-activities")
+                    }}
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.background = "rgba(255,255,255,0.1)"
+                        e.currentTarget.style.borderLeft = "4px solid #ffffff"
+                        e.currentTarget.style.color = "#ffffff"
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.background = "transparent"
+                        e.currentTarget.style.borderLeft = "4px solid transparent"
+                        e.currentTarget.style.color = "rgba(255,255,255,0.9)"
+                    }}
+                >
+                    <span>📅</span> Inline Activities
                 </div>
                 <div
                     style={styles.drawerMenuItem}
@@ -298,6 +318,7 @@ export default function Navbar_IC({ user, onLogout, title = "Employee Dashboard"
                                     onClick={() => {
                                         setProfileOpen(false)
                                         onLogout && onLogout()
+                                        navigate("/")
                                     }}
                                     onMouseEnter={(e) => (e.currentTarget.style.background = "#f3f8ff")}
                                     onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}

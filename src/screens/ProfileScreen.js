@@ -24,6 +24,7 @@ export default function ProfileScreen({ employee = null, onBack, onSaveProfile, 
     { label: "M&T", value: "M&T" },
     { label: "S&PS Insitu", value: "S&PS Insitu" },
     { label: "S&PS Exsitu", value: "S&PS Exsitu" },
+    { label: "Multiple", value: "Multiple" },
   ]
 
   const [empid, setEmpid] = useState("")
@@ -31,7 +32,11 @@ export default function ProfileScreen({ employee = null, onBack, onSaveProfile, 
   const [email, setEmail] = useState("")
   const [role, setRole] = useState("")
   const [otherRole, setOtherRole] = useState("")
-  const [cluster, setCluster] = useState("")
+
+  // Cluster States
+  const [clusterMode, setClusterMode] = useState("") // "MEBM", "Multiple", etc.
+  const [cluster1, setCluster1] = useState("")
+  const [cluster2, setCluster2] = useState("")
 
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState("")
@@ -61,7 +66,17 @@ export default function ProfileScreen({ employee = null, onBack, onSaveProfile, 
     setEmail(employee.email || "")
     setRole(employee.role || "")
     setOtherRole(employee.otherRole || employee.other_role || "")
-    setCluster(employee.cluster || "")
+
+    // Cluster Initialization
+    if (employee.cluster2) {
+      setClusterMode("Multiple")
+      setCluster1(employee.cluster || "")
+      setCluster2(employee.cluster2)
+    } else {
+      setClusterMode(employee.cluster || "")
+      setCluster1(employee.cluster || "")
+      setCluster2("")
+    }
   }, [employee])
 
   // Non-destructive background refresh (only fill empty local fields)
@@ -81,9 +96,19 @@ export default function ProfileScreen({ employee = null, onBack, onSaveProfile, 
           setEmail((cur) => (cur ? cur : obj.email || ""))
           setRole((cur) => (cur ? cur : obj.role || ""))
           setOtherRole((cur) => (cur ? cur : obj.otherRole || obj.other_role || ""))
-          setCluster((cur) => (cur ? cur : obj.cluster || ""))
+
+          // Cluster refresh logic
+          if (obj.cluster2) {
+            setClusterMode(cur => cur ? cur : "Multiple")
+            setCluster1(cur => cur ? cur : (obj.cluster || ""))
+            setCluster2(cur => cur ? cur : obj.cluster2)
+          } else {
+            setClusterMode(cur => cur ? cur : (obj.cluster || ""))
+            setCluster1(cur => cur ? cur : (obj.cluster || ""))
+          }
+
         } catch (e) {
-          console.warn("Profile refresh failed:", e)
+          // console.warn("Profile refresh failed:", e)
         }
       })()
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -97,7 +122,7 @@ export default function ProfileScreen({ employee = null, onBack, onSaveProfile, 
     email: !validateEmail(email) ? "Email format Incorrect" : "",
     role: !role ? "Role required" : "",
     otherRole: role === "Other" && !otherRole.trim() ? "Enter role" : "",
-    cluster: !cluster ? "Cluster required" : "",
+    cluster: !clusterMode ? "Cluster required" : (clusterMode === "Multiple" && (!cluster1 || !cluster2) ? "Both clusters required" : ""),
   }
   const onBlurField = (k) => setTouched((t) => ({ ...t, [k]: true }))
   const isValid = () => !Object.values(errors).some(Boolean)
@@ -150,13 +175,18 @@ export default function ProfileScreen({ employee = null, onBack, onSaveProfile, 
     setSaving(true)
 
     try {
+      // Determine final cluster values
+      let finalCluster = clusterMode === "Multiple" ? cluster1 : clusterMode;
+      let finalCluster2 = clusterMode === "Multiple" ? cluster2 : null;
+
       const payload = {
         name: name.trim(),
         empid: empid.toString().trim(),
         email: email.trim(),
         role: role === "Other" ? otherRole.trim() : role,
         otherRole: role === "Other" ? otherRole.trim() : "",
-        cluster,
+        cluster: finalCluster,
+        cluster2: finalCluster2,
         updated_at: new Date().toISOString(),
       }
 
@@ -170,7 +200,7 @@ export default function ProfileScreen({ employee = null, onBack, onSaveProfile, 
         body: JSON.stringify(payload),
       })
       let body = await readResponse(res)
-      console.log("[ProfileScreen] PATCH", res.status, body)
+
 
       if (!res.ok) {
         throw new Error(`Update failed with status ${res.status}`)
@@ -182,7 +212,7 @@ export default function ProfileScreen({ employee = null, onBack, onSaveProfile, 
       if (!serverRecord) throw new Error("Could not fetch record after save — check backend.")
 
       // Build profile-only object using serverRecord fields (non-destructive)
-      const profileKeys = ["empid", "name", "email", "role", "otherRole", "cluster", "updated_at"]
+      const profileKeys = ["empid", "name", "email", "role", "otherRole", "cluster", "cluster2", "updated_at"]
       const profileOnly = {}
       for (const k of profileKeys) {
         profileOnly[k] =
@@ -194,7 +224,7 @@ export default function ProfileScreen({ employee = null, onBack, onSaveProfile, 
         const existing = JSON.parse(sessionStorage.getItem("user") || "{}")
         sessionStorage.setItem("user", JSON.stringify({ ...existing, ...profileOnly }))
       } catch (e) {
-        console.warn("sessionStorage merge failed:", e)
+        // console.warn("sessionStorage merge failed:", e)
       }
 
       // Update state and notify parent
@@ -202,7 +232,7 @@ export default function ProfileScreen({ employee = null, onBack, onSaveProfile, 
       onSaveProfile && onSaveProfile(profileOnly)
       alert("Profile updated and confirmed on server.")
     } catch (err) {
-      console.error("[ProfileScreen] Save error:", err)
+      // console.error("[ProfileScreen] Save error:", err)
       setError(err.message || "Save failed — check console/network")
       setSaving(false)
       alert(`Save failed: ${err.message}. See console/network tab.`)
@@ -216,8 +246,11 @@ export default function ProfileScreen({ employee = null, onBack, onSaveProfile, 
     page: {
       minHeight: "100vh",
       background: "linear-gradient(180deg, #f4f7fb 0%, #ffffff 40%)", // modern soft gradient
-      padding: isMobile ? "8px 12px" : "12px 20px",
+      padding: "0", // Removed padding for full width Navbar
       fontFamily: "Segoe UI, Tahoma, sans-serif",
+    },
+    innerPage: {
+      padding: isMobile ? "8px 12px" : "12px 20px",
     },
 
 
@@ -270,6 +303,13 @@ export default function ProfileScreen({ employee = null, onBack, onSaveProfile, 
     },
   }
 
+  // Star Icon Component
+  const IconStar = () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="#fbbf24" stroke="#fbbf24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+    </svg>
+  )
+
   return (
     <div style={styles.page}>
       {/* Navbar wrapper: outer padding removed as requested; internal header keeps consistent spacing */}
@@ -278,86 +318,142 @@ export default function ProfileScreen({ employee = null, onBack, onSaveProfile, 
       {/* Hidden uploaded screenshot path (developer requested path) */}
       <img src="/mnt/data/5438abe0-f333-4e41-8233-b5ea2387a27d.png" alt="hidden" style={{ display: "none" }} />
 
-      {/* Profile card */}
-      <div style={styles.container} role="region" aria-label="Profile screen">
-        <div style={styles.headerRow}>
-          <div style={styles.pageTitle}>Profile</div>
+      <div style={styles.innerPage}>
+        {/* Profile card */}
+        <div style={styles.container} role="region" aria-label="Profile screen">
+          <div style={styles.headerRow}>
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <div style={styles.pageTitle}>Profile</div>
+              {/* Star Display */}
+              <div style={{ display: "flex", alignItems: "center", gap: "6px", background: "#fffbeb", padding: "4px 10px", borderRadius: "20px", border: "1px solid #fcd34d" }}>
+                <span style={{ fontSize: "16px", fontWeight: "700", color: "#b45309" }}>{employee?.stars || 0}</span>
+                <IconStar />
+              </div>
+            </div>
 
-          {/* Back moved to top-right inside card as requested */}
-          <div>
-            <button style={styles.backBtn} onClick={() => onBack && onBack()}>
-              ← Back
+            {/* Back moved to top-right inside card as requested */}
+            <div>
+              <button style={styles.backBtn} onClick={() => onBack && onBack()}>
+                ← Back
+              </button>
+            </div>
+          </div>
+
+          {error && <div style={styles.errorBox}>{error}</div>}
+
+          <div style={styles.formRow}>
+            <div style={styles.field}>
+              <label style={styles.label}>Full Name</label>
+              <input
+                style={styles.input}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                onBlur={() => onBlurField("name")}
+              />
+            </div>
+
+            <div style={styles.field}>
+              <label style={styles.label}>Employee ID</label>
+              <input
+                style={styles.input}
+                value={empid}
+                onChange={(e) => setEmpid(e.target.value)}
+                onBlur={() => onBlurField("empid")}
+              />
+            </div>
+
+            <div style={styles.field}>
+              <label style={styles.label}>Email</label>
+              <input
+                style={styles.input}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onBlur={() => onBlurField("email")}
+              />
+            </div>
+
+            <div style={styles.field}>
+              <label style={styles.label}>Role</label>
+              <select style={styles.select} value={role} onChange={(e) => setRole(e.target.value)}>
+                <option value="">Select role</option>
+                {ROLE.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+
+            {role === "Other" && (
+              <div style={styles.field}>
+                <label style={styles.label}>Specify Role</label>
+                <input style={styles.input} value={otherRole} onChange={(e) => setOtherRole(e.target.value)} />
+              </div>
+            )}
+
+            <div style={styles.field}>
+              <label style={styles.label}>Cluster</label>
+              <select
+                style={styles.select}
+                value={clusterMode}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setClusterMode(val);
+                  if (val !== "Multiple") {
+                    setCluster1(val);
+                    setCluster2("");
+                  } else {
+                    // If switching to Multiple, maybe keep existing as cluster1 if it's not Multiple
+                    if (clusterMode !== "Multiple" && clusterMode) {
+                      setCluster1(clusterMode);
+                    }
+                  }
+                }}
+              >
+                <option value="">Select cluster</option>
+                {CLUSTER.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+
+            {clusterMode === "Multiple" && (
+              <>
+                <div style={styles.field}>
+                  <label style={styles.label}>Cluster 1</label>
+                  <select
+                    style={styles.select}
+                    value={cluster1}
+                    onChange={(e) => setCluster1(e.target.value)}
+                  >
+                    <option value="">Select Cluster 1</option>
+                    {CLUSTER.filter(c => c.value !== "Multiple").map((opt) => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div style={styles.field}>
+                  <label style={styles.label}>Cluster 2</label>
+                  <select
+                    style={styles.select}
+                    value={cluster2}
+                    onChange={(e) => setCluster2(e.target.value)}
+                  >
+                    <option value="">Select Cluster 2</option>
+                    {CLUSTER.filter(c => c.value !== "Multiple").map((opt) => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                </div>
+              </>
+            )}
+
+          </div>
+
+          <div style={styles.actions}>
+            <button style={styles.saveBtn} onClick={handleSave} disabled={saving}>
+              {saving ? "Saving..." : "Save Profile"}
             </button>
           </div>
-        </div>
-
-        {error && <div style={styles.errorBox}>{error}</div>}
-
-        <div style={styles.formRow}>
-          <div style={styles.field}>
-            <label style={styles.label}>Full Name</label>
-            <input
-              style={styles.input}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              onBlur={() => onBlurField("name")}
-            />
-          </div>
-
-          <div style={styles.field}>
-            <label style={styles.label}>Employee ID</label>
-            <input
-              style={styles.input}
-              value={empid}
-              onChange={(e) => setEmpid(e.target.value)}
-              onBlur={() => onBlurField("empid")}
-            />
-          </div>
-
-          <div style={styles.field}>
-            <label style={styles.label}>Email</label>
-            <input
-              style={styles.input}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              onBlur={() => onBlurField("email")}
-            />
-          </div>
-
-          <div style={styles.field}>
-            <label style={styles.label}>Role</label>
-            <select style={styles.select} value={role} onChange={(e) => setRole(e.target.value)}>
-              <option value="">Select role</option>
-              {ROLE.map((opt) => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
-          </div>
-
-          {role === "Other" && (
-            <div style={styles.field}>
-              <label style={styles.label}>Specify Role</label>
-              <input style={styles.input} value={otherRole} onChange={(e) => setOtherRole(e.target.value)} />
-            </div>
-          )}
-
-          <div style={styles.field}>
-            <label style={styles.label}>Cluster</label>
-            <select style={styles.select} value={cluster} onChange={(e) => setCluster(e.target.value)}>
-              <option value="">Select cluster</option>
-              {CLUSTER.map((opt) => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
-          </div>
-
-
-        </div>
-
-        <div style={styles.actions}>
-          <button style={styles.saveBtn} onClick={handleSave} disabled={saving}>
-            {saving ? "Saving..." : "Save Profile"}
-          </button>
         </div>
       </div>
     </div>

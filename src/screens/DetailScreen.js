@@ -305,6 +305,11 @@ export default function DetailScreen({ employee = null, onBack, onSaveDetails, o
       }
     }
 
+    if (!noCurrentProject && effectiveAvailability === "Available") {
+      setError("You cannot be 'Available' if you have a current project. Please select 'Occupied' or 'Partially Available'.")
+      return
+    }
+
     setSavingState(true)
     try {
       // prepare payload: only detail fields
@@ -326,7 +331,7 @@ export default function DetailScreen({ employee = null, onBack, onSaveDetails, o
       const base = API_URL.replace(/\/$/, "")
       const id = employee.empid
       const target = `${base}/api/employees/${encodeURIComponent(id)}`
-      console.log("[DetailScreen] Save payload:", payload, "target:", target)
+
 
       // Try PUT
       let res = await fetch(target, {
@@ -335,7 +340,7 @@ export default function DetailScreen({ employee = null, onBack, onSaveDetails, o
         body: JSON.stringify(payload),
       })
       let body = await readResponse(res)
-      console.log("[DetailScreen] PUT", res.status, body)
+
 
       // PATCH fallback
       if (!res.ok) {
@@ -346,7 +351,7 @@ export default function DetailScreen({ employee = null, onBack, onSaveDetails, o
           body: JSON.stringify(payload),
         })
         body = await readResponse(res)
-        console.log("[DetailScreen] PATCH", res.status, body)
+
       }
 
       // POST fallback
@@ -358,7 +363,7 @@ export default function DetailScreen({ employee = null, onBack, onSaveDetails, o
           body: JSON.stringify({ empid: id, ...payload }),
         })
         const postBody = await readResponse(postRes)
-        console.log("[DetailScreen] POST", postRes.status, postBody)
+
         if (!postRes.ok) {
           throw new Error(`All update attempts failed. Last status: ${postRes.status}. Body: ${JSON.stringify(postBody)}`)
         }
@@ -422,98 +427,290 @@ export default function DetailScreen({ employee = null, onBack, onSaveDetails, o
   // ---------- NAVBAR helpers ----------
 
 
-  // ---------- STYLES (cleaner / less clutter) ----------
+  // ---------- STYLES (Modern & Industry Standard) ----------
+  const theme = {
+    primary: "#0f172a", // Slate 900
+    secondary: "#334155", // Slate 700
+    accent: "#2563eb", // Blue 600
+    accentHover: "#1d4ed8", // Blue 700
+    bg: "#f8fafc", // Slate 50
+    cardBg: "#ffffff",
+    border: "#e2e8f0", // Slate 200
+    text: "#1e293b", // Slate 800
+    textMuted: "#64748b", // Slate 500
+    danger: "#ef4444", // Red 500
+    success: "#22c55e", // Green 500
+    warning: "#f59e0b", // Amber 500
+  }
+
   const styles = {
     page: {
       minHeight: "100vh",
-      background: "linear-gradient(180deg, #f4f7fb 0%, #ffffff 40%)",
-      padding: isMobile ? "8px 12px" : "12px 20px",
-      fontFamily: "Segoe UI, Tahoma, sans-serif",
+      background: "#f1f5f9", // Slightly darker for better contrast
+      fontFamily: "'Inter', 'Segoe UI', sans-serif",
+      paddingBottom: "80px", // More space for fixed footer
     },
-    navWrapper: {
-      marginBottom: 18,
-      background: "linear-gradient(90deg, #016db9 0%, #0078d4 100%)",
-      borderRadius: 10,
-      boxShadow: "0 6px 18px rgba(3, 45, 85, 0.06)",
+    navContainer: {
+      background: "white",
+      borderBottom: `1px solid ${theme.border}`,
+      padding: "0", // Removed padding for full width
+      marginBottom: "40px",
+      position: "sticky",
+      top: 0,
+      zIndex: 200,
     },
-
-
-    // detail card / form styles
-    container: {
-      maxWidth: 980,
+    mainContainer: {
+      maxWidth: "1280px", // Wider for laptop
       margin: "0 auto",
-      padding: isMobile ? 16 : 28,
-      background: "#fff",
-      borderRadius: 12,
-      boxShadow: "0 18px 48px rgba(12,36,72,0.06)",
-      color: "#072a53",
+      padding: isMobile ? "0 16px" : "0 40px",
     },
-    headerRow: { display: "flex", alignItems: "center", marginBottom: 18, justifyContent: "space-between" },
-    pageTitle: { fontSize: 22, fontWeight: 800, color: "#072a53" },
+    header: {
+      marginBottom: "32px",
+      display: "flex",
+      flexDirection: isMobile ? "column" : "row",
+      justifyContent: "space-between",
+      alignItems: isMobile ? "flex-start" : "center",
+      gap: "16px",
+    },
+    titleGroup: {
+      display: "flex",
+      flexDirection: "column",
+      gap: "4px",
+    },
+    pageTitle: {
+      fontSize: "28px", // Larger title
+      fontWeight: "800",
+      color: theme.primary,
+      margin: 0,
+      letterSpacing: "-0.5px",
+    },
+    pageSubtitle: {
+      fontSize: "15px",
+      color: theme.textMuted,
+      fontWeight: "500",
+    },
     backBtn: {
-      padding: "8px 12px",
-      borderRadius: 8,
-      border: "none",
+      padding: "10px 20px",
+      borderRadius: "10px",
+      border: `1px solid ${theme.border}`,
+      background: "white",
+      color: theme.secondary,
+      fontWeight: "600",
+      fontSize: "14px",
       cursor: "pointer",
-      background: "#f3f7fb",
-      color: "#072a53",
-      fontWeight: 700,
-      boxShadow: "0 6px 20px rgba(3,45,85,0.04)",
-      transform: "translateY(0)",
-    },
-    // smaller checkbox style
-    smallCheckboxWrap: { display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13, color: "#374151" },
-    smallCheckbox: { transform: "scale(0.9)", marginRight: 4, cursor: "pointer" },
-
-    formRow: { display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: 18 },
-    field: { display: "flex", flexDirection: "column" },
-    label: { fontSize: 13, marginBottom: 8, color: "#374151", fontWeight: 600 },
-    input: {
-      padding: 12,
-      borderRadius: 10,
-      border: "1px solid #e8eef6",
-      background: "#fbfdff",
-      fontSize: 15,
-      outline: "none",
-      boxShadow: "inset 0 1px 0 rgba(255,255,255,0.6)",
-    },
-    textarea: { padding: 12, borderRadius: 10, border: "1px solid #e8eef6", fontSize: 15, minHeight: 120 },
-    select: { padding: 12, borderRadius: 10, border: "1px solid #e8eef6", background: "#fbfdff", fontSize: 15 },
-    tagRow: { display: "flex", flexWrap: "wrap", gap: 8, marginTop: 8 },
-    tag: {
-      background: "#eef7ff",
-      color: "#024a7a",
-      padding: "6px 10px",
-      borderRadius: 999,
-      fontSize: 13,
-      display: "inline-flex",
+      transition: "all 0.2s ease",
+      display: "flex",
       alignItems: "center",
-      gap: 8,
-      boxShadow: "0 4px 12px rgba(2,6,23,0.04)",
+      gap: "8px",
+      boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+    },
+    grid: {
+      display: "grid",
+      gridTemplateColumns: isMobile ? "1fr" : "2fr 1fr", // Wider left column
+      gap: "32px", // More gap
+      alignItems: "start",
+    },
+    card: {
+      background: theme.cardBg,
+      borderRadius: "20px", // Softer corners
+      border: `1px solid ${theme.border}`,
+      boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)", // Better shadow
+      padding: "32px", // More padding
+      display: "flex",
+      flexDirection: "column",
+      gap: "28px",
+    },
+    sectionTitle: {
+      fontSize: "18px",
+      fontWeight: "700",
+      color: theme.primary,
+      marginBottom: "20px",
+      borderBottom: `1px solid ${theme.border}`,
+      paddingBottom: "16px",
+      letterSpacing: "-0.3px",
+    },
+    fieldGroup: {
+      display: "flex",
+      flexDirection: "column",
+      gap: "8px",
+    },
+    label: {
+      fontSize: "14px",
+      fontWeight: "600",
+      color: theme.secondary,
+      marginBottom: "4px",
+    },
+    input: {
+      padding: "12px 16px", // Larger touch target
+      borderRadius: "10px",
+      border: `1px solid ${theme.border}`,
+      fontSize: "15px",
+      color: theme.text,
+      outline: "none",
+      transition: "all 0.2s ease",
+      width: "100%",
+      boxSizing: "border-box",
+      background: "#f8fafc",
+    },
+    select: {
+      padding: "12px 16px",
+      borderRadius: "10px",
+      border: `1px solid ${theme.border}`,
+      fontSize: "15px",
+      color: theme.text,
+      outline: "none",
+      width: "100%",
+      backgroundColor: "#f8fafc",
+      cursor: "pointer",
+      transition: "all 0.2s ease",
+    },
+    checkboxWrapper: {
+      display: "flex",
+      alignItems: "center",
+      gap: "10px",
+      cursor: "pointer",
+      userSelect: "none",
+      padding: "4px 0",
+    },
+    checkbox: {
+      width: "18px",
+      height: "18px",
+      cursor: "pointer",
+      accentColor: theme.accent,
+    },
+    checkboxLabel: {
+      fontSize: "14px",
+      color: theme.secondary,
+      fontWeight: "500",
+    },
+    helperText: {
+      fontSize: "13px",
+      color: theme.textMuted,
+      marginTop: "6px",
+      lineHeight: "1.4",
+    },
+    errorText: {
+      fontSize: "13px",
+      color: theme.danger,
+      marginTop: "6px",
+      fontWeight: "600",
+      display: "flex",
+      alignItems: "center",
+      gap: "4px",
+    },
+    warningBox: {
+      background: "#fffbeb",
+      border: "1px solid #fcd34d",
+      color: "#92400e",
+      padding: "16px",
+      borderRadius: "12px",
+      fontSize: "14px",
+      marginTop: "12px",
+      lineHeight: "1.5",
+    },
+    tagInputContainer: {
+      display: "flex",
+      gap: "10px",
+      marginBottom: "16px",
     },
     addBtn: {
-      padding: "8px 12px",
-      borderRadius: 10,
-      border: "1px solid #d7eafa",
-      background: "#eef7ff",
+      padding: "0 20px",
+      borderRadius: "10px",
+      background: theme.bg,
+      border: `1px solid ${theme.border}`,
+      color: theme.accent,
+      fontWeight: "600",
+      fontSize: "14px",
       cursor: "pointer",
-      fontWeight: 700,
+      transition: "all 0.2s",
+      whiteSpace: "nowrap",
     },
-    errorBox: { background: "#fff6f6", padding: 12, borderRadius: 8, color: "#b71c1c", marginBottom: 12 },
-    actions: { display: "flex", gap: 12, justifyContent: "flex-end", marginTop: 20 },
-    saveBtn: {
-      padding: "12px 18px",
-      borderRadius: 12,
-      background: "linear-gradient(90deg,#0078d4,#005fa3)",
-      color: "#fff",
+    tagsWrapper: {
+      display: "flex",
+      flexWrap: "wrap",
+      gap: "10px",
+    },
+    tag: {
+      display: "inline-flex",
+      alignItems: "center",
+      gap: "8px",
+      padding: "6px 14px",
+      borderRadius: "999px",
+      background: "#eff6ff",
+      color: theme.accent,
+      fontSize: "14px",
+      fontWeight: "500",
+      border: "1px solid #dbeafe",
+      transition: "all 0.2s",
+    },
+    removeTagBtn: {
       border: "none",
+      background: "transparent",
+      color: theme.accent,
       cursor: "pointer",
-      fontWeight: 800,
-      boxShadow: "0 10px 30px rgba(3, 45, 85, 0.12)",
-      minWidth: 140,
-      opacity: saving ? 0.8 : 1,
+      padding: "2px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      fontSize: "16px",
+      opacity: 0.6,
+      transition: "opacity 0.2s",
     },
-    dateNote: { fontSize: 12, color: "#6b7280", marginTop: 6 }
+    saveBar: {
+      position: "fixed",
+      bottom: "24px",
+      left: "50%",
+      transform: "translateX(-50%)",
+      background: "rgba(255, 255, 255, 0.9)",
+      backdropFilter: "blur(10px)",
+      border: `1px solid ${theme.border}`,
+      padding: "12px 24px",
+      display: "flex",
+      justifyContent: "center",
+      gap: "16px",
+      boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
+      zIndex: 100,
+      borderRadius: "16px",
+      width: "auto",
+      minWidth: "300px",
+    },
+    saveBtn: {
+      padding: "12px 32px",
+      borderRadius: "12px",
+      background: theme.accent,
+      color: "white",
+      border: "none",
+      fontWeight: "600",
+      fontSize: "15px",
+      cursor: "pointer",
+      boxShadow: "0 4px 6px -1px rgba(37, 99, 235, 0.2)",
+      transition: "all 0.2s",
+      opacity: saving ? 0.7 : 1,
+    },
+    cancelBtn: {
+      padding: "12px 32px",
+      borderRadius: "12px",
+      background: "white",
+      color: theme.secondary,
+      border: `1px solid ${theme.border}`,
+      fontWeight: "600",
+      fontSize: "15px",
+      cursor: "pointer",
+      transition: "all 0.2s",
+    },
+    globalError: {
+      background: "#fef2f2",
+      border: `1px solid #fecaca`,
+      color: "#991b1b",
+      padding: "16px",
+      borderRadius: "12px",
+      marginBottom: "32px",
+      fontSize: "14px",
+      fontWeight: "500",
+      display: "flex",
+      alignItems: "center",
+      gap: "12px",
+    }
   }
 
   // computed min/max attributes for date inputs
@@ -539,228 +736,296 @@ export default function DetailScreen({ employee = null, onBack, onSaveDetails, o
 
   return (
     <div style={styles.page}>
-      {/* Navbar wrapper */}
-      <div style={styles.navWrapper}>
+      {/* Navbar */}
+      <div style={styles.navContainer}>
         <Navbar user={employee} onLogout={onLogout} title="Details" />
       </div>
 
-      {/* Hidden developer image path */}
-      <img src="/mnt/data/a36fa973-d177-491a-98fd-19da52171079.png" alt="" style={{ display: "none" }} />
-
-      {/* Detail card / form */}
-      <div style={styles.container} role="region" aria-label="Details screen">
-        <div style={styles.headerRow}>
-          <div style={styles.pageTitle}>Details</div>
-          <div>
-            <button style={styles.backBtn} onClick={() => onBack && onBack()}>
-              ← Back
-            </button>
+      <div style={styles.mainContainer}>
+        {/* Header */}
+        <div style={styles.header}>
+          <div style={styles.titleGroup}>
+            <h1 style={styles.pageTitle}>{employee?.name || "Employee Details"}</h1>
+            <p style={styles.pageSubtitle}>{employee?.role || "No role specified"} • {employee?.cluster || "No cluster"}</p>
           </div>
+          <button style={styles.backBtn} onClick={() => onBack && onBack()}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
+            Back to Directory
+          </button>
         </div>
 
-        {error && <div style={styles.errorBox}>{error}</div>}
-        {dateError && <div style={{ ...styles.errorBox, marginBottom: 12 }}>{dateError}</div>}
-
-        <div style={styles.formRow}>
-          <div style={styles.field}>
-            <label style={styles.label}>Current Project</label>
-            <input style={styles.input} value={currentProject} onChange={(e) => setCurrentProject(e.target.value)} placeholder="Project name or blank" />
-            {/* smaller checkbox inline, removed explanatory text */}
-            <div style={{ marginTop: 10 }}>
-              <label style={styles.smallCheckboxWrap}>
-                <input
-                  type="checkbox"
-                  checked={noCurrentProject}
-                  onChange={(e) => setNoCurrentProject(e.target.checked)}
-                  style={styles.smallCheckbox}
-                  aria-label="No current project"
-                />
-                <span style={{ fontSize: 13, color: "#374151" }}>No current project</span>
-              </label>
-            </div>
+        {/* Global Error */}
+        {(error || dateError) && (
+          <div style={styles.globalError}>
+            {error || dateError}
           </div>
+        )}
 
-          <div style={styles.field}>
-            <label style={styles.label}>Availability</label>
-            {noCurrentProject ? (
-              <input style={styles.input} value="Available" disabled />
-            ) : (
-              <select style={styles.select} value={availability} onChange={(e) => setAvailability(e.target.value)}>
-                <option value="Partially Available">Partially Available</option>
+        {/* Main Grid */}
+        <div style={styles.grid}>
+          {/* Left Column: Professional Details */}
+          <div style={styles.card}>
+            <div style={styles.sectionTitle}>Professional Status</div>
+
+            {/* Current Project */}
+            <div style={styles.fieldGroup}>
+              <label style={styles.label}>Current Project</label>
+              <input
+                style={styles.input}
+                value={currentProject}
+                onChange={(e) => {
+                  const val = e.target.value
+                  setCurrentProject(val)
+                  const hasProject = val && val.trim().length > 0
+                  setNoCurrentProject(!hasProject)
+                  if (hasProject && availability === "Available") {
+                    setAvailability("Occupied")
+                  }
+                }}
+                placeholder="e.g. Project Alpha"
+              />
+              <div style={{ marginTop: "8px" }}>
+                <label style={styles.checkboxWrapper}>
+                  <input
+                    type="checkbox"
+                    checked={noCurrentProject}
+                    onChange={(e) => {
+                      const checked = e.target.checked
+                      setNoCurrentProject(checked)
+                      if (checked) {
+                        setCurrentProject("")
+                      } else {
+                        if (availability === "Available") {
+                          setAvailability("Occupied")
+                        }
+                      }
+                    }}
+                    style={styles.checkbox}
+                  />
+                  <span style={styles.checkboxLabel}>I am currently not on any project</span>
+                </label>
+              </div>
+            </div>
+
+            {/* Availability */}
+            <div style={styles.fieldGroup}>
+              <label style={styles.label}>Availability</label>
+              <select
+                style={{ ...styles.select, opacity: noCurrentProject ? 0.7 : 1 }}
+                value={noCurrentProject ? "Available" : availability}
+                onChange={(e) => setAvailability(e.target.value)}
+                disabled={noCurrentProject}
+              >
+                <option value="Available" disabled={!noCurrentProject}>Available</option>
                 <option value="Occupied">Occupied</option>
+                <option value="Partially Available">Partially Available</option>
               </select>
+              {!noCurrentProject && (
+                <div style={styles.helperText}>
+                  Requires "No current project" to be checked to select Available.
+                </div>
+              )}
+            </div>
+
+            {/* Partial Availability Details */}
+            {!noCurrentProject && availability === "Partially Available" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: "16px", marginTop: "8px", padding: "16px", background: "#f8fafc", borderRadius: "8px", border: `1px solid ${theme.border}` }}>
+                <div style={styles.fieldGroup}>
+                  <label style={styles.label}>Hours Available (per day)</label>
+                  <select
+                    style={styles.select}
+                    value={hoursAvailable}
+                    onChange={(e) => setHoursAvailable(e.target.value)}
+                  >
+                    <option value="">Select Hours</option>
+                    <option value="2">2 hours</option>
+                    <option value="4">4 hours</option>
+                    <option value="6">6 hours</option>
+                    <option value="8">Full Day</option>
+                  </select>
+                  {errors.hours && <div style={styles.errorText}>{errors.hours}</div>}
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                  <div style={styles.fieldGroup}>
+                    <label style={styles.label}>From Date</label>
+                    <input
+                      style={styles.input}
+                      type="date"
+                      value={fromDate}
+                      onChange={(e) => handleFromDateChange(e.target.value)}
+                      min={fromMin}
+                      max={toDate || undefined}
+                    />
+                    {errors.fromDate && <div style={styles.errorText}>{errors.fromDate}</div>}
+                  </div>
+
+                  <div style={styles.fieldGroup}>
+                    <label style={styles.label}>To Date</label>
+                    <input
+                      style={styles.input}
+                      type="date"
+                      value={toDate}
+                      onChange={(e) => handleToDateChange(e.target.value)}
+                      min={toMin}
+                      max={toMax}
+                    />
+                    {errors.toDate && <div style={styles.errorText}>{errors.toDate}</div>}
+                  </div>
+                </div>
+                <div style={styles.helperText}>
+                  Note: Weekends are disabled. Max duration is 1 year.
+                </div>
+              </div>
             )}
           </div>
 
-          {/* When partially available show hours/dates */}
-          {(!noCurrentProject && availability === "Partially Available") && (
-            <>
-              <div style={styles.field}>
-                <label style={styles.label}>Hours Available (per day)</label>
-                <input style={styles.input} value={hoursAvailable} onChange={(e) => setHoursAvailable(e.target.value)} placeholder="4" />
-                {errors.hours && <div style={{ color: "#d32f2f", marginTop: 6 }}>{errors.hours}</div>}
-              </div>
-
-              <div style={styles.field}>
-                <label style={styles.label}>From Date</label>
-                <input
-                  style={styles.input}
-                  type="date"
-                  value={fromDate}
-                  onChange={(e) => handleFromDateChange(e.target.value)}
-                  min={fromMin}
-                  max={toDate ? toDate : undefined} // prevent picking from > to when to exists
-                />
-                <div style={styles.dateNote}>From must be ≥ today and cannot be weekend.</div>
-                {errors.fromDate && <div style={{ color: "#d32f2f", marginTop: 6 }}>{errors.fromDate}</div>}
-              </div>
-
-              <div style={styles.field}>
-                <label style={styles.label}>To Date</label>
-                <input
-                  style={styles.input}
-                  type="date"
-                  value={toDate}
-                  onChange={(e) => handleToDateChange(e.target.value)}
-                  min={toMin}
-                  max={toMax}
-                />
-                <div style={styles.dateNote}>To cannot be weekend. Max separation between From and To is 1 year.</div>
-                {errors.toDate && <div style={{ color: "#d32f2f", marginTop: 6 }}>{errors.toDate}</div>}
-              </div>
-            </>
-          )}
-
-          {/* Skills (tags) */}
-          <div style={styles.field}>
-            <label style={styles.label}>Skills</label>
-            <div style={{ display: "flex", gap: 8 }}>
-              <input
-                id="skillInput"
-                placeholder="Add skill & press Enter"
-                style={styles.input}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault()
-                    const val = e.target.value.trim()
-                    if (val) addSkill(val)
-                    e.target.value = ""
-                  }
-                }}
-              />
-              <button
-                type="button"
-                onClick={() => {
-                  const el = document.getElementById("skillInput")
-                  if (!el) return
-                  const val = el.value.trim()
-                  if (val) addSkill(val)
-                  el.value = ""
-                }}
-                style={styles.addBtn}
-              >
-                Add
-              </button>
-            </div>
-            <div style={styles.tagRow}>
-              {skills.map((s) => (
-                <div key={s} style={styles.tag}>
-                  <span>{s}</span>
-                  <button onClick={() => removeSkill(s)} style={{ background: "transparent", border: "none", color: "#024a7a", fontWeight: 800, cursor: "pointer" }}>×</button>
+          {/* Right Column: Skills & Interests */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+            {/* Skills */}
+            <div style={styles.card}>
+              <div style={styles.sectionTitle}>Skills</div>
+              <div style={styles.fieldGroup}>
+                <div style={styles.tagInputContainer}>
+                  <input
+                    id="skillInput"
+                    placeholder="Add a skill..."
+                    style={styles.input}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault()
+                        const val = e.target.value.trim()
+                        if (val) addSkill(val)
+                        e.target.value = ""
+                      }
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const el = document.getElementById("skillInput")
+                      if (el && el.value.trim()) {
+                        addSkill(el.value.trim())
+                        el.value = ""
+                      }
+                    }}
+                    style={styles.addBtn}
+                  >
+                    Add
+                  </button>
                 </div>
-              ))}
+                <div style={styles.tagsWrapper}>
+                  {skills.map((s) => (
+                    <div key={s} style={styles.tag}>
+                      {s}
+                      <button onClick={() => removeSkill(s)} style={styles.removeTagBtn}>×</button>
+                    </div>
+                  ))}
+                  {skills.length === 0 && <span style={styles.helperText}>No skills added yet.</span>}
+                </div>
+              </div>
+            </div>
+
+            {/* Interests */}
+            <div style={styles.card}>
+              <div style={styles.sectionTitle}>Technical Interests</div>
+              <div style={styles.fieldGroup}>
+                <div style={styles.tagInputContainer}>
+                  <input
+                    id="interestInput"
+                    placeholder="Add an interest..."
+                    style={styles.input}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault()
+                        const val = e.target.value.trim()
+                        if (val) addInterest(val)
+                        e.target.value = ""
+                      }
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const el = document.getElementById("interestInput")
+                      if (el && el.value.trim()) {
+                        addInterest(el.value.trim())
+                        el.value = ""
+                      }
+                    }}
+                    style={styles.addBtn}
+                  >
+                    Add
+                  </button>
+                </div>
+                <div style={styles.tagsWrapper}>
+                  {interests.map((i) => (
+                    <div key={i} style={styles.tag}>
+                      {i}
+                      <button onClick={() => removeInterest(i)} style={styles.removeTagBtn}>×</button>
+                    </div>
+                  ))}
+                  {interests.length === 0 && <span style={styles.helperText}>No interests added yet.</span>}
+                </div>
+              </div>
+            </div>
+
+            {/* Previous Projects */}
+            <div style={styles.card}>
+              <div style={styles.sectionTitle}>Previous Projects</div>
+              <div style={styles.fieldGroup}>
+                <div style={styles.tagInputContainer}>
+                  <input
+                    id="previousInput"
+                    placeholder="Add a project..."
+                    style={styles.input}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault()
+                        const val = e.target.value.trim()
+                        if (val) addPrevious(val)
+                        e.target.value = ""
+                      }
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const el = document.getElementById("previousInput")
+                      if (el && el.value.trim()) {
+                        addPrevious(el.value.trim())
+                        el.value = ""
+                      }
+                    }}
+                    style={styles.addBtn}
+                  >
+                    Add
+                  </button>
+                </div>
+                <div style={styles.tagsWrapper}>
+                  {previousProjects.map((p) => (
+                    <div key={p} style={styles.tag}>
+                      {p}
+                      <button onClick={() => removePrevious(p)} style={styles.removeTagBtn}>×</button>
+                    </div>
+                  ))}
+                  {previousProjects.length === 0 && <span style={styles.helperText}>No previous projects listed.</span>}
+                </div>
+              </div>
             </div>
           </div>
+        </div >
+      </div >
 
-          {/* Interests (now tag style like skills) */}
-          <div style={styles.field}>
-            <label style={styles.label}>Technical Interests</label>
-            <div style={{ display: "flex", gap: 8 }}>
-              <input
-                id="interestInput"
-                placeholder="Add technical interests & press Enter"
-                style={styles.input}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault()
-                    const val = e.target.value.trim()
-                    if (val) addInterest(val)
-                    e.target.value = ""
-                  }
-                }}
-              />
-              <button
-                type="button"
-                onClick={() => {
-                  const el = document.getElementById("interestInput")
-                  if (!el) return
-                  const val = el.value.trim()
-                  if (val) addInterest(val)
-                  el.value = ""
-                }}
-                style={styles.addBtn}
-              >
-                Add
-              </button>
-            </div>
-            <div style={styles.tagRow}>
-              {interests.map((i) => (
-                <div key={i} style={styles.tag}>
-                  <span>{i}</span>
-                  <button onClick={() => removeInterest(i)} style={{ background: "transparent", border: "none", color: "#024a7a", fontWeight: 800, cursor: "pointer" }}>×</button>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Previous Projects (tag-style) */}
-          <div style={styles.field}>
-            <label style={styles.label}>Previous Projects</label>
-            <div style={{ display: "flex", gap: 8 }}>
-              <input
-                id="previousInput"
-                placeholder="Add project & press Enter"
-                style={styles.input}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault()
-                    const val = e.target.value.trim()
-                    if (val) addPrevious(val)
-                    e.target.value = ""
-                  }
-                }}
-              />
-              <button
-                type="button"
-                onClick={() => {
-                  const el = document.getElementById("previousInput")
-                  if (!el) return
-                  const val = el.value.trim()
-                  if (val) addPrevious(val)
-                  el.value = ""
-                }}
-                style={styles.addBtn}
-              >
-                Add
-              </button>
-            </div>
-            <div style={styles.tagRow}>
-              {previousProjects.map((p) => (
-                <div key={p} style={styles.tag}>
-                  <span>{p}</span>
-                  <button onClick={() => removePrevious(p)} style={{ background: "transparent", border: "none", color: "#024a7a", fontWeight: 800, cursor: "pointer" }}>×</button>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div style={styles.actions}>
-          <button type="button" onClick={handleSave} style={styles.saveBtn} disabled={saving}>
-            {saving ? "Saving..." : "Save details"}
-          </button>
-        </div>
-      </div>
-    </div>
+      {/* Floating Save Bar */}
+      < div style={styles.saveBar} >
+        <button type="button" onClick={() => onBack && onBack()} style={styles.cancelBtn}>
+          Cancel
+        </button>
+        <button type="button" onClick={handleSave} style={styles.saveBtn} disabled={saving}>
+          {saving ? "Saving..." : "Save Changes"}
+        </button>
+      </div >
+    </div >
   )
 }
