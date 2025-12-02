@@ -180,8 +180,8 @@ export default function LoginScreen({ onLogin }) {
 
 
             <div style={styles.content}>
-                <img src="/logo/Bluebird_logo_white.png" alt="Bluebird Logo" style={styles.logo} />
-                <h3 style={styles.welcome}>Welcome to the Bluebird Star App</h3>
+                <img src="../../Logo/Bluebird_logo_white.png" alt="Bluebird Logo" style={styles.logo} />
+                {/* <h3 style={styles.welcome}>Welcome to the Bluebird Star App</h3> */}
                 <h2 style={styles.title}>Login</h2>
 
                 {error && <div style={styles.error}>{error}</div>}
@@ -220,7 +220,7 @@ export default function LoginScreen({ onLogin }) {
                             rel="noopener noreferrer"
                             style={{ color: "#0078d4", textDecoration: "none", fontSize: "14px", fontWeight: "500" }}
                         >
-                            Facing Problem on Logging?
+                            Facing Problem Logging in?
                         </a>
                     </div>
                 </form>
