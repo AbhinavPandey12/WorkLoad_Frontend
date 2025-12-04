@@ -271,7 +271,7 @@ export default function Navbar_IC({ user, onLogout, title = "Employee Dashboard"
 
                 <div style={styles.rightArea}>
                     <div
-                        onClick={() => alert("you have received the following notification")}
+                        onClick={() => alert("No notifications received yet!")}
                         style={{ cursor: "pointer", display: "flex", alignItems: "center" }}
                         title="Notifications"
                     >
