@@ -307,7 +307,7 @@ export default function Navbar_Manager({ user, onLogout, title = "Employee Dashb
 
                 <div style={styles.rightArea}>
                     <div
-                        onClick={() => alert("you have received the following notification")}
+                        onClick={() => alert("No notifications received yet!")}
                         style={{ cursor: "pointer", display: "flex", alignItems: "center" }}
                         title="Notifications"
                     >
