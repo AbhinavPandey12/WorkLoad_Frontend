@@ -191,7 +191,7 @@ export default function LoginScreen({ onLogin }) {
                         <label style={styles.label}>Email Address</label>
                         <input
                             type="email"
-                            placeholder="Enter your email"
+                            placeholder="Enter your TTL email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             style={styles.input}
