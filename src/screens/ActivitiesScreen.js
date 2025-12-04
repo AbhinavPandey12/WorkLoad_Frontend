@@ -65,7 +65,7 @@ export default function ActivitiesScreen({ onLogout }) {
             const res = await fetch(`${API_URL}/api/projects`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ ...formData, empid: user.id })
+                body: JSON.stringify({ ...formData, empid: user.empid })
             })
 
             if (res.ok) {
