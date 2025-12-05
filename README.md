@@ -1,54 +1,53 @@
-# PWA Backend
+# TATA PWA Frontend
 
-This is the backend server for the PWA system, built with Node.js and Express. It manages API requests, authentication, and database interactions using both MySQL and Supabase.
+This is the frontend client for the PWA system, a Progressive Web Application built with React.js. It provides a responsive user interface for employees and managers to interact with the system.
 
 ## 🚀 Tech Stack
 
-- **Runtime:** [Node.js](https://nodejs.org/)
-- **Framework:** [Express.js](https://expressjs.com/)
-- **Database:**
-  - [MySQL](https://www.mysql.com/) (via `mysql2`)
-  - [Supabase](https://supabase.com/) (via `@supabase/supabase-js`)
-- **Utilities:**
-  - `dotenv` for environment variable management
-  - `cors` for Cross-Origin Resource Sharing
-  - `axios` for making HTTP requests
+- **Framework:** [React](https://reactjs.org/) (Create React App)
+- **Routing:** [React Router](https://reactrouter.com/)
+- **Styling:** [Styled Components](https://styled-components.com/)
+- **Date Handling:** `react-datepicker`
+- **PWA Features:** Service Workers, Manifest
 
 ## 📂 Project Structure
 
 ```
-tata_pwa_modified_backend/
-├── controllers/      # Logic for handling API requests
-├── db/               # Database connection configurations
-├── routes/           # API route definitions
-├── index.js          # Entry point of the application
-├── .env              # Environment variables (not committed)
+tata_pwa_modified_frontend/
+├── public/           # Static assets (index.html, manifest.json, icons)
+├── src/
+│   ├── components/   # Reusable UI components (Navbar, Popups, etc.)
+│   ├── screens/      # Page components (Dashboard, Login, Profile, etc.)
+│   ├── hooks/        # Custom React hooks
+│   ├── utils/        # Utility functions
+│   ├── App.js        # Main application component and routing
+│   ├── config.js     # Configuration constants (e.g., API URLs)
+│   └── index.js      # Entry point
 └── package.json      # Dependencies and scripts
 ```
 
 ## 🛠️ Setup & Installation
 
-1.  **Clone the repository** (if you haven't already).
-2.  **Navigate to the backend directory:**
+1.  **Navigate to the frontend directory:**
     ```bash
-    cd tata_pwa_modified_backend
+    cd tata_pwa_modified_frontend
     ```
-3.  **Install dependencies:**
+2.  **Install dependencies:**
     ```bash
     npm install
     ```
-4.  **Configure Environment Variables:**
-    Create a `.env` file in the root directory and add your configuration details (e.g., DB credentials, API keys).
-    ```env
-    PORT=5000
-    # Add other necessary variables here
-    ```
-5.  **Start the server:**
+3.  **Start the development server:**
     ```bash
     npm start
     ```
-    The server will typically run on `http://localhost:5000` (or the port specified in your `.env`).
+    The app will run in development mode at `http://localhost:3000`.
 
 ## 📜 Scripts
 
-- `npm start`: Runs the application using `node index.js`.
+- `npm start`: Runs the app in development mode.
+- `npm run build`: Builds the app for production to the `build` folder.
+- `npm test`: Launches the test runner.
+
+## 📱 PWA Features
+
+This application is designed to be installable. It includes a `manifest.json` and service worker registration (if enabled) to provide an app-like experience on mobile devices.
