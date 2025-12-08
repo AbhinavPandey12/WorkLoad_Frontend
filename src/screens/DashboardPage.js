@@ -318,64 +318,86 @@ export default function DashboardPage({ onLogout }) {
     )
 
     // New Chart for Capacity Totals (Vertical Comparison)
-    const CapacityComparisonChart = ({ partial, available }) => {
+    const CapacityComparisonChart = ({ partial, available, partialCount, availableCount }) => {
         const data = [
-            { label: "Partial Available", value: partial, color: "#f59e0b" },
-            { label: "Available", value: available, color: "#22c55e" }
+            { label: "Partial Available", value: partial, color: "#f59e0b", count: partialCount },
+            { label: "Available", value: available, color: "#22c55e", count: availableCount }
         ];
         const maxVal = Math.max(partial, available, 10); // Ensure scale
 
         // Responsive SVG settings
         const viewBoxWidth = 400;
         const viewBoxHeight = 300;
-        const padding = { top: 40, right: 20, bottom: 40, left: 50 };
+        const padding = { top: 40, right: 20, bottom: 60, left: 50 }; // Increased bottom padding for X-axis labels if needed
         const innerWidth = viewBoxWidth - padding.left - padding.right;
         const innerHeight = viewBoxHeight - padding.top - padding.bottom;
         const barWidth = 60;
 
         return (
-            <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <svg width="100%" height="100%" viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeight}`} preserveAspectRatio="xMidYMid meet" style={{ overflow: "visible" }}>
-                    {/* Y-Axis Grid */}
-                    {[0, 0.25, 0.5, 0.75, 1].map((t) => {
-                        const y = padding.top + innerHeight * (1 - t);
-                        const val = Math.round(maxVal * t);
-                        return (
-                            <g key={t}>
-                                <line x1={padding.left} y1={y} x2={viewBoxWidth - padding.right} stroke="#e5e7eb" strokeWidth="1" strokeDasharray="4 4" />
-                                <text x={padding.left - 10} y={y + 4} textAnchor="end" fontSize="12" fill="#9ca3af">{val}</text>
-                            </g>
-                        );
-                    })}
+            <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column" }}>
+                <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <svg width="100%" height="100%" viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeight}`} preserveAspectRatio="xMidYMid meet" style={{ overflow: "visible" }}>
+                        {/* Y-Axis Grid */}
+                        {[0, 0.25, 0.5, 0.75, 1].map((t) => {
+                            const y = padding.top + innerHeight * (1 - t);
+                            const val = Math.round(maxVal * t);
+                            return (
+                                <g key={t}>
+                                    <line x1={padding.left} y1={y} x2={viewBoxWidth - padding.right} stroke="#e5e7eb" strokeWidth="1" strokeDasharray="4 4" />
+                                    <text x={padding.left - 10} y={y + 4} textAnchor="end" fontSize="12" fill="#9ca3af">{val}</text>
+                                </g>
+                            );
+                        })}
 
-                    {/* Bars */}
-                    {data.map((d, i) => {
-                        const x = padding.left + (innerWidth / 4) + (i * (innerWidth / 2)) - (barWidth / 2); // Center bars in halves
-                        const barHeight = (d.value / maxVal) * innerHeight;
-                        const y = padding.top + innerHeight - barHeight;
+                        {/* Bars */}
+                        {data.map((d, i) => {
+                            const x = padding.left + (innerWidth / 4) + (i * (innerWidth / 2)) - (barWidth / 2); // Center bars in halves
+                            const barHeight = (d.value / maxVal) * innerHeight;
+                            const y = padding.top + innerHeight - barHeight;
 
-                        return (
-                            <g key={d.label}>
-                                <rect
-                                    x={x}
-                                    y={y}
-                                    width={barWidth}
-                                    height={barHeight}
-                                    fill={d.color}
-                                    rx="4"
-                                />
-                                {/* Value on top */}
-                                <text x={x + barWidth / 2} y={y - 10} textAnchor="middle" fontSize="14" fontWeight="bold" fill={d.color}>
-                                    {d.value}h
-                                </text>
-                                {/* Label at bottom */}
-                                <text x={x + barWidth / 2} y={viewBoxHeight - 15} textAnchor="middle" fontSize="12" fontWeight="600" fill="#374151">
+                            return (
+                                <g key={d.label}>
+                                    <rect
+                                        x={x}
+                                        y={y}
+                                        width={barWidth}
+                                        height={barHeight}
+                                        fill={d.color}
+                                        rx="4"
+                                    />
+                                    {/* Value on top */}
+                                    <text x={x + barWidth / 2} y={y - 10} textAnchor="middle" fontSize="14" fontWeight="bold" fill={d.color}>
+                                        {d.value}h
+                                    </text>
+                                    {/* Label at bottom */}
+                                    {/* <text x={x + barWidth / 2} y={viewBoxHeight - 15} textAnchor="middle" fontSize="12" fontWeight="600" fill="#374151">
                                     {d.label}
-                                </text>
-                            </g>
-                        );
-                    })}
-                </svg>
+                                </text> */}
+                                </g>
+                            );
+                        })}
+                    </svg>
+                </div>
+                {/* Legend */}
+                <div style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "8px",
+                    marginTop: "16px",
+                    fontSize: "12px",
+                    color: "#374151",
+                    alignSelf: "flex-start", // Bottom Left
+                    paddingLeft: "10px"
+                }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <div style={{ width: "12px", height: "12px", background: "#f59e0b", borderRadius: "2px" }}></div>
+                        <span>Total Partial Hours ({partialCount || 0} people)</span>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <div style={{ width: "12px", height: "12px", background: "#22c55e", borderRadius: "2px" }}></div>
+                        <span>Total Available Hours ({availableCount || 0} people)</span>
+                    </div>
+                </div>
             </div>
         );
     };
@@ -549,6 +571,8 @@ export default function DashboardPage({ onLogout }) {
                                     <CapacityComparisonChart
                                         partial={metrics.totalPartialHours || 0}
                                         available={metrics.totalAvailableHours || 0}
+                                        partialCount={metrics.partialEmployeeCount || 0}
+                                        availableCount={metrics.availableEmployeeCount || 0}
                                     />
                                 </div>
                             </div>
