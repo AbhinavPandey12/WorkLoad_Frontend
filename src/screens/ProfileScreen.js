@@ -439,7 +439,7 @@ export default function ProfileScreen({ employee = null, onBack, onSaveProfile, 
                     onChange={(e) => setCluster2(e.target.value)}
                   >
                     <option value="">Select Cluster 2</option>
-                    {CLUSTER.filter(c => c.value !== "Multiple").map((opt) => (
+                    {CLUSTER.filter(c => c.value !== "Multiple" && c.value !== cluster1).map((opt) => (
                       <option key={opt.value} value={opt.value}>{opt.label}</option>
                     ))}
                   </select>
