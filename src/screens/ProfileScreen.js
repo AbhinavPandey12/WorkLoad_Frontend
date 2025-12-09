@@ -346,7 +346,7 @@ export default function ProfileScreen({ employee = null, onBack, onSaveProfile, 
               <label style={styles.label}>Full Name</label>
               <input
                 style={styles.input}
-                value={name}
+                value={name} disabled
                 onChange={(e) => setName(e.target.value)}
                 onBlur={() => onBlurField("name")}
               />
@@ -356,7 +356,7 @@ export default function ProfileScreen({ employee = null, onBack, onSaveProfile, 
               <label style={styles.label}>Employee ID</label>
               <input
                 style={styles.input}
-                value={empid}
+                value={empid} disabled
                 onChange={(e) => setEmpid(e.target.value)}
                 onBlur={() => onBlurField("empid")}
               />
@@ -366,7 +366,7 @@ export default function ProfileScreen({ employee = null, onBack, onSaveProfile, 
               <label style={styles.label}>Email</label>
               <input
                 style={styles.input}
-                value={email}
+                value={email} disabled
                 onChange={(e) => setEmail(e.target.value)}
                 onBlur={() => onBlurField("email")}
               />
