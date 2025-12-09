@@ -166,43 +166,63 @@ export default function DetailScreen({ employee = null, onBack, onSaveDetails, o
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [employee && employee.empid])
 
-    // Fetch all employees to derive global project list
+    // Fetch all employees + Project Cache to derive global project list
     useEffect(() => {
         const fetchAllForDropdown = async () => {
             try {
-                const url = `${API_URL.replace(/\/$/, "")}/api/employees`
-                const res = await fetch(url, { method: "GET", headers: { "Content-Type": "application/json" } })
-                if (!res.ok) return
-                const data = await res.json()
-                if (Array.isArray(data)) {
-                    const unique = Array.from(
-                        new Set(
-                            data.flatMap((emp) => {
-                                const projects = []
-                                if (emp.current_project) projects.push(emp.current_project)
-                                if (emp.currentProject) projects.push(emp.currentProject)
-                                const rawPrev = emp.previous_projects || emp.previousProjects
-                                if (Array.isArray(rawPrev)) {
-                                    projects.push(...rawPrev)
-                                } else if (typeof rawPrev === "string") {
-                                    try {
-                                        const parsed = JSON.parse(rawPrev)
-                                        if (Array.isArray(parsed)) projects.push(...parsed)
-                                        else projects.push(rawPrev)
-                                    } catch {
-                                        if (rawPrev.includes(",")) projects.push(...rawPrev.split(","))
-                                        else projects.push(rawPrev)
-                                    }
-                                }
-                                return projects
-                            })
-                        )
-                    )
-                        .map((p) => (typeof p === "string" ? p.trim() : ""))
-                        .filter((p) => p.length > 0)
-                        .sort()
-                    setAllProjects(unique)
+                // 1. Fetch employees for legacy project derivation
+                const urlEmp = `${API_URL.replace(/\/$/, "")}/api/employees`
+                const resEmp = await fetch(urlEmp, { method: "GET", headers: { "Content-Type": "application/json" } })
+
+                let employees = []
+                if (resEmp.ok) {
+                    const data = await resEmp.json()
+                    if (Array.isArray(data)) employees = data
                 }
+
+                // 2. Fetch Project Cache from DB
+                let dbProjects = []
+                try {
+                    const urlProj = `${API_URL.replace(/\/$/, "")}/api/projects`
+                    const resProj = await fetch(urlProj)
+                    if (resProj.ok) {
+                        const dataP = await resProj.json()
+                        dbProjects = dataP.map(p => p.project_name).filter(Boolean)
+                    }
+                } catch (e) {
+                    console.warn("DetailScreen: Failed to fetch project cache:", e)
+                }
+
+                // 3. Merge
+                const unique = Array.from(
+                    new Set([
+                        ...dbProjects,
+                        ...employees.flatMap((emp) => {
+                            const projects = []
+                            if (emp.current_project) projects.push(emp.current_project)
+                            if (emp.currentProject) projects.push(emp.currentProject)
+                            const rawPrev = emp.previous_projects || emp.previousProjects
+                            if (Array.isArray(rawPrev)) {
+                                projects.push(...rawPrev)
+                            } else if (typeof rawPrev === "string") {
+                                try {
+                                    const parsed = JSON.parse(rawPrev)
+                                    if (Array.isArray(parsed)) projects.push(...parsed)
+                                    else projects.push(rawPrev)
+                                } catch {
+                                    if (rawPrev.includes(",")) projects.push(...rawPrev.split(","))
+                                    else projects.push(rawPrev)
+                                }
+                            }
+                            return projects
+                        })
+                    ])
+                )
+                    .map((p) => (typeof p === "string" ? p.trim() : ""))
+                    .filter((p) => p.length > 0)
+                    .sort()
+                setAllProjects(unique)
+
             } catch (e) {
                 // silent fail
             }

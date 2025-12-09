@@ -246,10 +246,33 @@ export default function HomeScreen({ onLogout, employee }) {
     setFilteredEmployees(filtered)
   }, [searchTerm, availabilityFilter, availabilityRange, employees]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Derive unique project list from all employees
+  // -------------------------
+  // Project Cache (Fetch from DB + Merge with existing employee data)
+  // -------------------------
+  const [dbProjects, setDbProjects] = useState([])
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/projects`)
+        if (res.ok) {
+          const data = await res.json()
+          // Extract project names
+          const names = data.map(p => p.project_name).filter(Boolean)
+          setDbProjects(names)
+        }
+      } catch (e) {
+        console.warn("Failed to fetch project cache:", e)
+      }
+    }
+    fetchProjects()
+  }, [])
+
+  // Derive unique project list data from BOTH employees and DB cache
   const allProjects = Array.from(
-    new Set(
-      employees.flatMap((emp) => {
+    new Set([
+      ...dbProjects,
+      ...employees.flatMap((emp) => {
         const projects = []
         if (emp.current_project) projects.push(emp.current_project)
         if (emp.currentProject) projects.push(emp.currentProject)
@@ -270,7 +293,7 @@ export default function HomeScreen({ onLogout, employee }) {
         }
         return projects
       })
-    )
+    ])
   )
     .map((p) => (typeof p === "string" ? p.trim() : ""))
     .filter((p) => p.length > 0)
