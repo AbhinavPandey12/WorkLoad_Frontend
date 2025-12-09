@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import { API_URL } from "../config"
 
-export default function EmployeeCard({ employee = {}, getInitials, currentUser, onRefresh }) {
+export default function EmployeeCard({ employee = {}, getInitials, currentUser, onRefresh, allProjects = [] }) {
   const [expanded, setExpanded] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -835,7 +835,13 @@ export default function EmployeeCard({ employee = {}, getInitials, currentUser, 
                       value={formData.current_project || ""}
                       onChange={e => setFormData({ ...formData, current_project: e.target.value })}
                       placeholder="Project Name"
+                      list={`project-options-${employee.empid || employee.id}`}
                     />
+                    <datalist id={`project-options-${employee.empid || employee.id}`}>
+                      {allProjects.map((proj, idx) => (
+                        <option key={idx} value={proj} />
+                      ))}
+                    </datalist>
                   </div>
 
                   <div style={styles.editField}>

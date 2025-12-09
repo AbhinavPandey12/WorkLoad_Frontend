@@ -25,6 +25,9 @@ export default function DetailScreen({ employee = null, onBack, onSaveDetails, o
     const [dateError, setDateError] = useState("")
     const [showHint, setShowHint] = useState(false)
 
+    // Derived project list
+    const [allProjects, setAllProjects] = useState([])
+
 
 
     // helper to parse list-like values
@@ -162,6 +165,50 @@ export default function DetailScreen({ employee = null, onBack, onSaveDetails, o
             })()
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [employee && employee.empid])
+
+    // Fetch all employees to derive global project list
+    useEffect(() => {
+        const fetchAllForDropdown = async () => {
+            try {
+                const url = `${API_URL.replace(/\/$/, "")}/api/employees`
+                const res = await fetch(url, { method: "GET", headers: { "Content-Type": "application/json" } })
+                if (!res.ok) return
+                const data = await res.json()
+                if (Array.isArray(data)) {
+                    const unique = Array.from(
+                        new Set(
+                            data.flatMap((emp) => {
+                                const projects = []
+                                if (emp.current_project) projects.push(emp.current_project)
+                                if (emp.currentProject) projects.push(emp.currentProject)
+                                const rawPrev = emp.previous_projects || emp.previousProjects
+                                if (Array.isArray(rawPrev)) {
+                                    projects.push(...rawPrev)
+                                } else if (typeof rawPrev === "string") {
+                                    try {
+                                        const parsed = JSON.parse(rawPrev)
+                                        if (Array.isArray(parsed)) projects.push(...parsed)
+                                        else projects.push(rawPrev)
+                                    } catch {
+                                        if (rawPrev.includes(",")) projects.push(...rawPrev.split(","))
+                                        else projects.push(rawPrev)
+                                    }
+                                }
+                                return projects
+                            })
+                        )
+                    )
+                        .map((p) => (typeof p === "string" ? p.trim() : ""))
+                        .filter((p) => p.length > 0)
+                        .sort()
+                    setAllProjects(unique)
+                }
+            } catch (e) {
+                // silent fail
+            }
+        }
+        fetchAllForDropdown()
+    }, [])
 
     // validation
     const errors = {
@@ -774,7 +821,13 @@ export default function DetailScreen({ employee = null, onBack, onSaveDetails, o
                                             }
                                         }}
                                         placeholder="e.g. Project Alpha"
+                                        list="detail-project-options"
                                     />
+                                    <datalist id="detail-project-options">
+                                        {allProjects.map((proj, idx) => (
+                                            <option key={idx} value={proj} />
+                                        ))}
+                                    </datalist>
                                     <div style={{ marginTop: "8px" }}>
                                         <label style={styles.checkboxWrapper}>
                                             <input

@@ -246,6 +246,36 @@ export default function HomeScreen({ onLogout, employee }) {
     setFilteredEmployees(filtered)
   }, [searchTerm, availabilityFilter, availabilityRange, employees]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Derive unique project list from all employees
+  const allProjects = Array.from(
+    new Set(
+      employees.flatMap((emp) => {
+        const projects = []
+        if (emp.current_project) projects.push(emp.current_project)
+        if (emp.currentProject) projects.push(emp.currentProject)
+
+        // Previous projects can be array, string, or mixed
+        const rawPrev = emp.previous_projects || emp.previousProjects
+        if (Array.isArray(rawPrev)) {
+          projects.push(...rawPrev)
+        } else if (typeof rawPrev === "string") {
+          try {
+            const parsed = JSON.parse(rawPrev)
+            if (Array.isArray(parsed)) projects.push(...parsed)
+            else projects.push(rawPrev)
+          } catch {
+            if (rawPrev.includes(",")) projects.push(...rawPrev.split(","))
+            else projects.push(rawPrev)
+          }
+        }
+        return projects
+      })
+    )
+  )
+    .map((p) => (typeof p === "string" ? p.trim() : ""))
+    .filter((p) => p.length > 0)
+    .sort()
+
   // Keep same initials logic as EmployeeCard
   const getInitials = (name) => {
     if (!name) return "U"
@@ -475,6 +505,7 @@ export default function HomeScreen({ onLogout, employee }) {
                 getInitials={getInitials}
                 currentUser={employee}
                 onRefresh={fetchEmployees}
+                allProjects={allProjects}
               />
             ))
           ) : (
