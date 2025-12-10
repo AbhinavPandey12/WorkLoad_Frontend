@@ -110,7 +110,7 @@ export default function Navbar_IC({ user, onLogout, title = "Employee Dashboard"
 
             <Offcanvas show={showMenu} onHide={handleClose} style={{ width: "250px", background: "linear-gradient(180deg, #a5b4fc 0%, #6366f1 100%)", color: "white" }}>
                 <Offcanvas.Header style={{ borderBottom: "2px solid rgba(255,255,255,0.2)", padding: "10px 0px" }}>
-                    <div className="d-flex align-items-center gap-1">
+                    <div className="d-flex align-items-center gap-2">
                         <img src="/Logo/MainLogo.png" alt="Logo" style={{ height: "65px", objectFit: "contain" }} />
                         <span style={{ fontSize: "20px", fontWeight: "bold", letterSpacing: "0.5px", whiteSpace: "nowrap", marginLeft: "-10px" }}>Bluebird Star</span>
                     </div>
