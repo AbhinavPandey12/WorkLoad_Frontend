@@ -109,7 +109,7 @@ export default function Navbar_Manager({ user, onLogout, title = "Employee Dashb
             <Offcanvas show={showMenu} onHide={handleClose} style={{ width: "250px", background: "linear-gradient(180deg, #a5b4fc 0%, #6366f1 100%)", color: "white" }}>
                 <Offcanvas.Header style={{ borderBottom: "2px solid rgba(255,255,255,0.2)", padding: "10px 0px" }}>
                     <div className="d-flex align-items-center gap-0">
-                        <img src="/logo/MainLogo.png" alt="Logo" style={{ height: "65px", objectFit: "contain" }} />
+                        <img src="../../public/Logo/MainLogo.png" alt="Logo" style={{ height: "65px", objectFit: "contain" }} />
                         <span style={{ fontSize: "20px", fontWeight: "bold", letterSpacing: "0.5px", whiteSpace: "nowrap", marginLeft: "-10px" }}>Bluebird Star</span>
                     </div>
                 </Offcanvas.Header>
