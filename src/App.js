@@ -1,6 +1,6 @@
-// src/App.js
 import React, { useState } from "react"
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from "react-router-dom"
+import { ToastContainer } from "react-toastify";
 import LoginScreen from "./screens/LoginScreen"
 import HomeScreen from "./screens/HomeScreen"
 import ProfileScreen from "./screens/ProfileScreen"
@@ -41,7 +41,7 @@ export default function App() {
     // Show the install prompt
     deferredPrompt.prompt();
     // Wait for the user to respond to the prompt
-    const { outcome } = await deferredPrompt.userChoice;
+    await deferredPrompt.userChoice;
     // We've used the prompt, and can't use it again, throw it away
     setDeferredPrompt(null);
     setShowInstallPopup(false);
@@ -125,69 +125,82 @@ export default function App() {
           element={!user ? <LoginScreen onLogin={(u) => handleLogin(u)} /> : <Navigate to={(user.role_type || "").trim().toLowerCase() === "manager" ? "/dashboard" : "/details"} />}
         />
 
-        {/* /dashboard route for Managers */}
+        {/* --- Protected Routes --- */}
+
+        {/* Dashboard: Managers Only */}
         <Route
           path="/dashboard"
           element={
-            user ? (
-              (user.role_type || "").trim().toLowerCase() === "manager" ? <DashboardPage onLogout={handleLogout} /> : <Navigate to="/details" />
-            ) : (
-              <Navigate to="/" />
-            )
+            <ProtectedRoute user={user} requiredRole="manager" fallback="/details">
+              <DashboardPage onLogout={handleLogout} />
+            </ProtectedRoute>
           }
         />
 
-        {/* /home route - keeps previous UX where Profile is toggled inside home */}
+        {/* Employee Directory: Managers Only (Employees redirect to details) */}
         <Route
           path="/home"
           element={
-            user ? (
-              (user.role_type || "").trim().toLowerCase() === "manager" ? <HomeScreen onLogout={handleLogout} employee={user} /> : <Navigate to="/details" />
-            ) : (
-              <Navigate to="/" />
-            )
+            <ProtectedRoute user={user} requiredRole="manager" fallback="/details">
+              <HomeScreen onLogout={handleLogout} employee={user} />
+            </ProtectedRoute>
           }
         />
 
-        {/* Details route wrapper - useNavigate inside wrapper (valid because wrapper rendered inside Router) */}
+        {/* Details: Accessible to All (Employees land here, Managers can view too? Logic says NO usually, but let's see) 
+            Original logic for /details: 
+            user ? <DetailsRoute ... /> : <Navigate to="/" />
+            It didn't restrict role. So both can view?
+        */}
         <Route
           path="/details"
           element={
-            user ? <DetailsRoute user={user} mergeProfileIntoUser={mergeProfileIntoUser} setUser={setUser} onLogout={handleLogout} /> : <Navigate to="/" />
+            <ProtectedRoute user={user}>
+              <DetailsRoute user={user} mergeProfileIntoUser={mergeProfileIntoUser} setUser={setUser} onLogout={handleLogout} />
+            </ProtectedRoute>
           }
         />
 
-        {/* Profile route wrapper (route-based profile view) */}
+        {/* Profile: Accessible to All */}
         <Route
           path="/profile"
-          element={user ? <ProfileRoute user={user} mergeProfileIntoUser={mergeProfileIntoUser} onLogout={handleLogout} /> : <Navigate to="/" />}
+          element={
+            <ProtectedRoute user={user}>
+              <ProfileRoute user={user} mergeProfileIntoUser={mergeProfileIntoUser} onLogout={handleLogout} />
+            </ProtectedRoute>
+          }
         />
 
-        {/* Reset Password route wrapper */}
+        {/* Reset Password: Accessible to All */}
         <Route
           path="/reset-password"
           element={
-            user ? <ResetPasswordRoute user={user} onLogout={handleLogout} /> : <Navigate to="/" />
+            <ProtectedRoute user={user}>
+              <ResetPasswordRoute user={user} onLogout={handleLogout} />
+            </ProtectedRoute>
           }
         />
 
-        {/* Activities route wrapper (Manager only) */}
+        {/* Activities: Managers Only */}
         <Route
           path="/activities"
           element={
-            user ? (
-              (user.role_type || "").trim().toLowerCase() === "manager" ? <ActivitiesScreen onLogout={handleLogout} /> : <Navigate to="/home" />
-            ) : (
-              <Navigate to="/" />
-            )
+            <ProtectedRoute user={user} requiredRole="manager" fallback="/home">
+              <ActivitiesScreen onLogout={handleLogout} />
+            </ProtectedRoute>
           }
         />
 
-        {/* Inline Activities route wrapper (User only) */}
+        {/* Inline Activities: Accessible to All? 
+            Original logic: user ? <InlineActivitiesScreen ... /> : /
+            It didn't restrict role.
+        */}
         <Route
           path="/inline-activities"
           element={
-            user ? <InlineActivitiesScreen onLogout={handleLogout} /> : <Navigate to="/" />
+            <ProtectedRoute user={user}>
+              <InlineActivitiesScreen onLogout={handleLogout} />
+            </ProtectedRoute>
           }
         />
 
@@ -202,9 +215,33 @@ export default function App() {
           />
         )
       }
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
     </Router >
   )
 }
+
+/* ----- Wrapper components ----- */
+
+/**
+ * ProtectedRoute Wrapper
+ * Enforces login and optional role check.
+ */
+function ProtectedRoute({ user, requiredRole, children, fallback }) {
+  if (!user) {
+    return <Navigate to="/" replace />
+  }
+
+  if (requiredRole) {
+    const userRole = (user.role_type || "").trim().toLowerCase()
+    const targetRole = requiredRole.toLowerCase()
+    if (userRole !== targetRole) {
+      return <Navigate to={fallback || "/"} replace />
+    }
+  }
+
+  return children
+}
+
 
 /* ----- Wrapper components (must be defined after default export or inside file) ----- */
 

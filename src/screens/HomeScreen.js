@@ -1,13 +1,12 @@
 // Frontend/src/screens/HomeScreen.js
 import { useState, useEffect } from "react"
-
 import EmployeeCard from "../components/EmployeeCard"
 import Navbar from "../components/Navbar"
 import { API_URL } from "../config"
 import Loader from "../components/Loader"
+import { Container, Row, Col, Form, Card, Alert } from "react-bootstrap";
 
 export default function HomeScreen({ onLogout, employee }) {
-
 
   const [employees, setEmployees] = useState([])
   const [filteredEmployees, setFilteredEmployees] = useState([])
@@ -17,48 +16,30 @@ export default function HomeScreen({ onLogout, employee }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
 
-
-
-  // mobile detection for responsive inline styles (<= 900px treated as mobile/tablet breakpoint adjustable)
-  const [isMobile, setIsMobile] = useState(typeof window !== "undefined" ? window.innerWidth <= 900 : false)
-  useEffect(() => {
-    const onResize = () => setIsMobile(window.innerWidth <= 900)
-    onResize()
-    window.addEventListener("resize", onResize)
-    return () => window.removeEventListener("resize", onResize)
-  }, [])
-
   useEffect(() => {
     fetchEmployees()
   }, [])
 
-
-
   const fetchEmployees = async () => {
     try {
-      // console.log("[v0] Fetching employees from:", `${API_URL}/api/employees`)
       const response = await fetch(`${API_URL}/api/employees`, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
       })
-
-      // console.log("[v0] Employees response status:", response.status)
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: Failed to fetch employees`)
       }
 
       const data = await response.json()
-      // console.log("[v0] Employees fetched successfully:", data.length, "items")
 
       const today = new Date()
       today.setHours(0, 0, 0, 0)
-
       const updatesToSync = []
 
       // Filter out Managers AND apply expiry logic
       const sanitizedData = data
-        .filter(emp => (emp.role_type || "").toLowerCase() !== "manager") // Exclude Managers
+        .filter(emp => (emp.role_type || "").toLowerCase() !== "manager")
         .map((emp) => {
           const av = (emp.availability || "").toLowerCase()
           if (av === "partially available" || av.includes("partial")) {
@@ -67,15 +48,11 @@ export default function HomeScreen({ onLogout, employee }) {
                 const datePart = emp.to_date.toString().split("T")[0].split(" ")[0]
                 const [y, m, d] = datePart.split("-").map((s) => parseInt(s, 10))
                 const toDateObj = new Date(y, m - 1, d)
-                // If toDate is strictly before today, it's expired
                 if (toDateObj < today) {
-                  // Mark for DB update
                   updatesToSync.push(emp)
                   return { ...emp, availability: "Occupied" }
                 }
-              } catch (e) {
-                // ignore parse errors
-              }
+              } catch (e) { }
             }
           }
           return emp
@@ -85,9 +62,7 @@ export default function HomeScreen({ onLogout, employee }) {
       setFilteredEmployees(sanitizedData)
       setError("")
 
-      // Background sync: Update DB for expired records
       if (updatesToSync.length > 0) {
-        // console.log("[v0] Found expired records to sync:", updatesToSync.length)
         Promise.allSettled(updatesToSync.map(emp => {
           const url = `${API_URL}/api/employees/${emp.empid || emp.id}`
           return fetch(url, {
@@ -97,14 +72,10 @@ export default function HomeScreen({ onLogout, employee }) {
               availability: "Occupied",
               updated_at: new Date().toISOString()
             })
-          }).then(res => {
-            // if (res.ok) console.log(`[v0] Auto-expired emp ${emp.empid}`)
-            // else console.warn(`[v0] Failed to auto-expire emp ${emp.empid}`)
           })
         }))
       }
     } catch (err) {
-
       setError(`Failed to load employees: ${err.message}. Make sure backend is running on ${API_URL}`)
     } finally {
       setLoading(false)
@@ -162,7 +133,7 @@ export default function HomeScreen({ onLogout, employee }) {
   }
 
   // -------------------------
-  // Availability logic (STRICTER)
+  // Availability logic
   // -------------------------
   const isEmployeeAvailableInRange = (emp, rangeKey) => {
     if (!emp) return false
@@ -174,7 +145,7 @@ export default function HomeScreen({ onLogout, employee }) {
     if (av === "available") {
       const from = parseDateOnly(emp.from_date)
       const to = parseDateOnly(emp.to_date)
-      if (!from || !to) return true // no explicit window => treat as always-available
+      if (!from || !to) return true
       let rStart, rEnd
       if (rangeKey === "Today") {
         rStart = startOfToday(); rEnd = endOfToday()
@@ -191,7 +162,6 @@ export default function HomeScreen({ onLogout, employee }) {
     if (av === "partially available" || av.includes("partial")) {
       const from = parseDateOnly(emp.from_date)
       const to = parseDateOnly(emp.to_date)
-      // strict: require both dates
       if (!from || !to) return false
       let rStart, rEnd
       if (rangeKey === "Today") {
@@ -215,7 +185,6 @@ export default function HomeScreen({ onLogout, employee }) {
   useEffect(() => {
     let filtered = employees || []
 
-    // search
     if (searchTerm) {
       const lowerSearch = searchTerm.toLowerCase()
       filtered = filtered.filter((emp) =>
@@ -225,18 +194,15 @@ export default function HomeScreen({ onLogout, employee }) {
       )
     }
 
-    // availability filter (Exact match on availability string)
     if (availabilityFilter !== "All") {
       filtered = filtered.filter((emp) => (emp.availability || "") === availabilityFilter)
     }
 
-    // availability range filtering: apply unless availabilityFilter === "Occupied"
     const applyRange = availabilityFilter !== "Occupied"
     if (applyRange && availabilityRange && availabilityRange !== "Any") {
       filtered = filtered.filter((emp) => isEmployeeAvailableInRange(emp, availabilityRange))
     }
 
-    // Sort by empid to ensure stable order
     filtered.sort((a, b) => {
       const idA = a.empid || a.id || 0;
       const idB = b.empid || b.id || 0;
@@ -244,20 +210,17 @@ export default function HomeScreen({ onLogout, employee }) {
     });
 
     setFilteredEmployees(filtered)
-  }, [searchTerm, availabilityFilter, availabilityRange, employees]) // eslint-disable-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm, availabilityFilter, availabilityRange, employees]);
 
-  // -------------------------
-  // Project Cache (Fetch from DB + Merge with existing employee data)
-  // -------------------------
+  // Project Cache
   const [dbProjects, setDbProjects] = useState([])
-
   useEffect(() => {
     const fetchProjects = async () => {
       try {
         const res = await fetch(`${API_URL}/api/projects`)
         if (res.ok) {
           const data = await res.json()
-          // Extract project names
           const names = data.map(p => p.project_name).filter(Boolean)
           setDbProjects(names)
         }
@@ -268,7 +231,6 @@ export default function HomeScreen({ onLogout, employee }) {
     fetchProjects()
   }, [])
 
-  // Derive unique project list data from BOTH employees and DB cache
   const allProjects = Array.from(
     new Set([
       ...dbProjects,
@@ -276,8 +238,6 @@ export default function HomeScreen({ onLogout, employee }) {
         const projects = []
         if (emp.current_project) projects.push(emp.current_project)
         if (emp.currentProject) projects.push(emp.currentProject)
-
-        // Previous projects can be array, string, or mixed
         const rawPrev = emp.previous_projects || emp.previousProjects
         if (Array.isArray(rawPrev)) {
           projects.push(...rawPrev)
@@ -299,245 +259,97 @@ export default function HomeScreen({ onLogout, employee }) {
     .filter((p) => p.length > 0)
     .sort()
 
-  // Keep same initials logic as EmployeeCard
   const getInitials = (name) => {
     if (!name) return "U"
-    return name
-      .split(" ")
-      .map((word) => word[0])
-      .join("")
-      .toUpperCase()
+    return name.split(" ").map((word) => word[0]).join("").toUpperCase()
   }
 
-  // Color generator same as EmployeeCard (keeps avatar consistent)
-
-
-  const styles = {
-    container: {
-      padding: "0", // Removed padding for full width Navbar
-      fontFamily: "Segoe UI, Tahoma, sans-serif",
-      background: "#f5f5f5",
-      minHeight: "100vh",
-    },
-    stickyNav: {
-      position: "sticky",
-      top: 0,
-      zIndex: 1000,
-      width: "100%",
-    },
-    innerContainer: {
-      padding: isMobile ? "12px" : "15px",
-    },
-    controls: {
-      background: "white",
-      padding: isMobile ? "12px" : "20px",
-      borderRadius: "8px",
-      marginBottom: "20px",
-      boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-    },
-    // desktop/tablet: single inline row for search+filters
-    desktopSearchBox: {
-      display: "flex",
-      gap: "10px",
-      alignItems: "center",
-      flexWrap: "nowrap",
-      width: "100%",
-    },
-    // mobile: two rows (searchRow + filtersRow)
-    searchRow: {
-      display: "flex",
-      gap: "10px",
-      marginBottom: 10,
-      alignItems: "center",
-      flexWrap: "nowrap",
-    },
-    filtersRow: {
-      display: "flex",
-      gap: "10px",
-      alignItems: "center",
-      flexWrap: "nowrap",
-      overflowX: "auto",
-    },
-    input: {
-      flex: 1,
-      minWidth: isMobile ? "160px" : "280px",
-      padding: isMobile ? "8px 10px" : "10px 12px",
-      borderRadius: "6px",
-      border: "1px solid #ddd",
-      fontSize: 14,
-      fontFamily: "inherit",
-    },
-    smallSelect: {
-      padding: isMobile ? "8px 10px" : "10px 12px",
-      borderRadius: "6px",
-      border: "1px solid #ddd",
-      fontSize: 14,
-      fontFamily: "inherit",
-      minWidth: isMobile ? 130 : 150,
-      whiteSpace: "nowrap",
-    },
-    smallSelectDisabled: {
-      padding: isMobile ? "8px 10px" : "10px 12px",
-      borderRadius: "6px",
-      border: "1px solid #eee",
-      fontSize: 14,
-      fontFamily: "inherit",
-      minWidth: isMobile ? 130 : 150,
-      whiteSpace: "nowrap",
-      opacity: 0.6,
-      cursor: "not-allowed",
-      background: "#fafafa",
-    },
-    grid: {
-      display: "grid",
-      gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fill, minmax(350px, 1fr))",
-      gap: "20px",
-    },
-    noResults: {
-      textAlign: "center",
-      padding: "40px 20px",
-      color: "#999",
-      fontSize: 16,
-    },
-    errorBox: {
-      background: "#ffebee",
-      color: "#d32f2f",
-      padding: "15px",
-      borderRadius: "8px",
-      marginBottom: "20px",
-      fontSize: 14,
-    },
-  }
+  const rangeApplicable = availabilityFilter !== "Occupied"
 
   if (loading) {
     return (
-      <div style={{ ...styles.container, display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
+      <div className="vh-100 d-flex justify-content-center align-items-center">
         <Loader />
       </div>
     )
   }
 
-  // derive initials / color for the profile avatar
-
-
-
-  // range applicable for all except Occupied
-  const rangeApplicable = availabilityFilter !== "Occupied"
-
   return (
-    <div style={styles.container}>
-      <div style={styles.stickyNav}>
+    <div className="min-vh-100 bg-light">
+      <div className="sticky-top">
         <Navbar user={employee} onLogout={onLogout} title="Employee Directory" />
       </div>
 
-      <div style={styles.innerContainer}>
-        {error && <div style={styles.errorBox}>{error}</div>}
+      <Container fluid className="py-4">
+        {error && <Alert variant="danger">{error}</Alert>}
 
-        <div style={styles.controls}>
-          {/* Desktop/tablet: put search and selects inline in a single row */}
-          {!isMobile ? (
-            <div style={styles.desktopSearchBox}>
-              <input
-                style={styles.input}
-                type="text"
-                placeholder="Search by name, skill or role..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-
-              <select
-                style={styles.smallSelect}
-                value={availabilityFilter}
-                onChange={(e) => {
-                  const val = e.target.value
-                  setAvailabilityFilter(val)
-                  if (val === "Occupied") setAvailabilityRange("Any")
-                }}
-              >
-                <option value="All">All Availability</option>
-                <option value="Available">Available</option>
-                <option value="Occupied">Occupied</option>
-                <option value="Partially Available">Partially Available</option>
-              </select>
-
-              <select
-                style={rangeApplicable ? styles.smallSelect : styles.smallSelectDisabled}
-                value={availabilityRange}
-                onChange={(e) => setAvailabilityRange(e.target.value)}
-                disabled={!rangeApplicable}
-                title={rangeApplicable ? "Filter by time range" : "Select a status other than 'Occupied' to enable"}
-              >
-                <option value="Any">Any time</option>
-                <option value="Today">Available today</option>
-                <option value="This Week">Available this week</option>
-                <option value="This Month">Available this month</option>
-              </select>
-            </div>
-          ) : (
-            <>
-              {/* Mobile: search row then filters row */}
-              <div style={styles.searchRow}>
-                <input
-                  style={styles.input}
+        <Card className="mb-4 shadow-sm border-0" style={{ borderRadius: "8px" }}>
+          <Card.Body className="p-3">
+            <Row className="g-3 align-items-center">
+              <Col xs={12} lg>
+                <Form.Control
                   type="text"
                   placeholder="Search by name, skill or role..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
-              </div>
+              </Col>
 
-              <div style={styles.filtersRow}>
-                <select
-                  style={styles.smallSelect}
+              <Col xs={12} sm={6} lg="auto">
+                <Form.Select
                   value={availabilityFilter}
                   onChange={(e) => {
                     const val = e.target.value
                     setAvailabilityFilter(val)
                     if (val === "Occupied") setAvailabilityRange("Any")
                   }}
+                  style={{ width: "100%" }}
                 >
                   <option value="All">All Availability</option>
                   <option value="Available">Available</option>
                   <option value="Occupied">Occupied</option>
                   <option value="Partially Available">Partially Available</option>
-                </select>
+                </Form.Select>
+              </Col>
 
-                <select
-                  style={rangeApplicable ? styles.smallSelect : styles.smallSelectDisabled}
+              <Col xs={12} sm={6} lg="auto">
+                <Form.Select
                   value={availabilityRange}
                   onChange={(e) => setAvailabilityRange(e.target.value)}
                   disabled={!rangeApplicable}
                   title={rangeApplicable ? "Filter by time range" : "Select a status other than 'Occupied' to enable"}
+                  style={{ width: "100%" }}
                 >
                   <option value="Any">Any time</option>
                   <option value="Today">Available today</option>
                   <option value="This Week">Available this week</option>
                   <option value="This Month">Available this month</option>
-                </select>
-              </div>
-            </>
-          )}
-        </div>
+                </Form.Select>
+              </Col>
+            </Row>
+          </Card.Body>
+        </Card>
 
-        <div style={styles.grid}>
+        <Row className="g-4">
           {filteredEmployees.length > 0 ? (
             filteredEmployees.map((emp) => (
-              <EmployeeCard
-                key={emp.empid || emp.id || emp.name}
-                employee={emp}
-                getInitials={getInitials}
-                currentUser={employee}
-                onRefresh={fetchEmployees}
-                allProjects={allProjects}
-              />
+              <Col key={emp.empid || emp.id || emp.name} xs={12} md={6} lg={4} xl={3}>
+                <EmployeeCard
+                  employee={emp}
+                  getInitials={getInitials}
+                  currentUser={employee}
+                  onRefresh={fetchEmployees}
+                  allProjects={allProjects}
+                />
+              </Col>
             ))
           ) : (
-            <div style={styles.noResults}>
+            <div className="text-center py-5 text-muted">
               {employees.length === 0 ? "No employees available" : "No employees match your search"}
             </div>
           )}
-        </div>
-      </div>
+        </Row>
+      </Container>
     </div>
   )
 }

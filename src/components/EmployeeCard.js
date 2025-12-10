@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react"
+import { toast } from "react-toastify"
+import { Button } from "react-bootstrap"
 import { API_URL } from "../config"
 
 export default function EmployeeCard({ employee = {}, getInitials, currentUser, onRefresh, allProjects = [] }) {
@@ -301,7 +303,7 @@ export default function EmployeeCard({ employee = {}, getInitials, currentUser, 
 
     if (formData.availability === "Partially Available") {
       if (!isValid()) {
-        alert("Please fix validation errors before saving.")
+        toast.warn("Please fix validation errors before saving.")
         return
       }
     }
@@ -331,9 +333,9 @@ export default function EmployeeCard({ employee = {}, getInitials, currentUser, 
 
       setIsEditing(false)
       if (onRefresh) onRefresh()
-      alert("Employee details updated!")
+      toast.success("Employee details updated!")
     } catch (err) {
-      alert("Update failed: " + err.message)
+      toast.error("Update failed: " + err.message)
     } finally {
       setSaving(false)
     }
@@ -358,7 +360,7 @@ export default function EmployeeCard({ employee = {}, getInitials, currentUser, 
     card: {
       background: "#fff",
       border: "1px solid #eee",
-      borderRadius: "12px",
+      borderRadius: "4px",
       overflow: "hidden",
       boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
       transition: "all 0.25s ease",
@@ -657,7 +659,7 @@ export default function EmployeeCard({ employee = {}, getInitials, currentUser, 
 
       // Revert on failure
       setDisplayStars(previousStars)
-      alert("Failed to update star count. Please try again.")
+      toast.error("Failed to update star count. Please try again.")
     }
   }
 
@@ -702,7 +704,7 @@ export default function EmployeeCard({ employee = {}, getInitials, currentUser, 
       onKeyDown={(e) => (e.key === "Enter" || e.key === " " ? handleCardClick(e) : null)}
       aria-expanded={expanded}
     >
-      <div style={{ height: "4px", width: "100%", background: statusColor, borderTopLeftRadius: "12px", borderTopRightRadius: "12px" }} />
+      <div style={{ height: "4px", width: "100%", background: statusColor, borderTopLeftRadius: "4px", borderTopRightRadius: "4px" }} />
 
       {/* header: name, role, availability */}
       <div style={styles.header}>
@@ -770,47 +772,31 @@ export default function EmployeeCard({ employee = {}, getInitials, currentUser, 
                   </div>
 
                   {isManager && (
-                    <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                      <button
+                    <div className="d-flex flex-column gap-1">
+                      <Button
+                        variant="light"
+                        size="sm"
+                        className="p-0 border-0 d-flex align-items-center justify-content-center text-primary"
+                        style={{ width: "16px", height: "12px", lineHeight: 1 }}
                         onClick={(e) => { e.stopPropagation(); handleStarChange(1); }}
-                        style={{
-                          border: "none",
-                          background: "transparent",
-                          cursor: "pointer",
-                          padding: "0",
-                          lineHeight: "1",
-                          color: "#64748b",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          height: "10px"
-                        }}
                         title="Increase"
                       >
                         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M18 15l-6-6-6 6" />
                         </svg>
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        variant="light"
+                        size="sm"
+                        className="p-0 border-0 d-flex align-items-center justify-content-center text-secondary"
+                        style={{ width: "16px", height: "12px", lineHeight: 1 }}
                         onClick={(e) => { e.stopPropagation(); handleStarChange(-1); }}
-                        style={{
-                          border: "none",
-                          background: "transparent",
-                          cursor: "pointer",
-                          padding: "0",
-                          lineHeight: "1",
-                          color: "#64748b",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          height: "10px"
-                        }}
                         title="Decrease"
                       >
                         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M6 9l6 6 6-6" />
                         </svg>
-                      </button>
+                      </Button>
                     </div>
                   )}
                 </div>

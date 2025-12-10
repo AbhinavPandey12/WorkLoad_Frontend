@@ -1,13 +1,88 @@
 body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+        'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+        sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    padding-top: 70px;
+    /* Space for fixed Navbar */
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+        monospace;
+}
+
+/* UI Polish Overrides */
+:root {
+    --bs-border-radius: 0.25rem;
+    --bs-border-radius-lg: 0.3rem;
+    --bs-border-radius-sm: 0.2rem;
+    --bs-body-bg: #f8f9fa;
+    --primary-color: #6ea8fe;
+    /* Blue 300 */
+    --primary-hover: #3d8bfd;
+    /* Blue 400 */
+}
+
+.card {
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.btn {
+    font-weight: 500;
+    letter-spacing: 0.3px;
+}
+
+/* Global Button Overrides for Indigo Theme */
+.btn-primary {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active {
+    background-color: var(--primary-hover) !important;
+    border-color: var(--primary-hover) !important;
+}
+
+.btn-outline-primary {
+    color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+}
+
+.btn-outline-primary:hover,
+.btn-outline-primary:focus,
+.btn-outline-primary:active {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    color: white !important;
+}
+
+a.text-primary {
+    color: var(--primary-color) !important;
+}
+
+/* Toastify Mobile Adjustments */
+@media only screen and (max-width: 480px) {
+    .Toastify__toast-container {
+        width: 250px !important;
+        max-width: 80% !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        right: auto !important;
+        top: 75px !important;
+        /* Below Navbar (70px) */
+    }
+
+    .Toastify__toast {
+        min-height: 44px !important;
+        font-size: 12px !important;
+        border-radius: 8px !important;
+        margin-bottom: 8px !important;
+        padding: 8px !important;
+    }
 }

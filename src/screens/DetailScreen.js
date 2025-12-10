@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react"
+import { toast } from "react-toastify"
 
 import Navbar from "../components/Navbar"
 import { API_URL } from "../config"
@@ -19,6 +20,7 @@ export default function DetailScreen({ employee = null, onBack, onSaveDetails, o
     const [skills, setSkills] = useState([])
     const [interests, setInterests] = useState([]) // array of strings
     const [previousProjects, setPreviousProjects] = useState([]) // array of strings
+    const [currentPreviousInput, setCurrentPreviousInput] = useState("")
 
     const [loading, setLoading] = useState(true)
     const [saving, setSavingState] = useState(false)
@@ -420,11 +422,11 @@ export default function DetailScreen({ employee = null, onBack, onSaveDetails, o
             }
 
             onSaveDetails && onSaveDetails(serverRecord)
-            alert("Details saved and confirmed on server.")
+            toast.success("Details saved and confirmed on server.")
         } catch (err) {
             console.error("[DetailScreen] Save error:", err)
             setError(err.message || "Save failed — check console/network")
-            alert(`Save failed: ${err.message}. See console/network tab.`)
+            toast.error(`Save failed: ${err.message}. See console/network tab.`)
         } finally {
             setSavingState(false)
         }
@@ -452,8 +454,8 @@ export default function DetailScreen({ employee = null, onBack, onSaveDetails, o
     const theme = {
         primary: "#0f172a", // Slate 900
         secondary: "#334155", // Slate 700
-        accent: "#2563eb", // Blue 600
-        accentHover: "#1d4ed8", // Blue 700
+        accent: "#4f46e5", // Indigo 600
+        accentHover: "#4338ca", // Indigo 700
         bg: "#f8fafc", // Slate 50
         cardBg: "#ffffff",
         border: "#e2e8f0", // Slate 200
@@ -472,17 +474,7 @@ export default function DetailScreen({ employee = null, onBack, onSaveDetails, o
             color: theme.text,
             paddingBottom: "100px", // Space for fixed save bar
         },
-        navContainer: {
-            background: "white",
-            borderBottom: `1px solid ${theme.border}`,
-            padding: "0",
-            marginBottom: "20px", // Reduced from 40px
-            position: "sticky",
-            top: 0,
-            zIndex: 200,
-            width: "100%", // Ensure full width
-            left: 0,
-        },
+
         titleGroup: {
             display: "flex",
             flexDirection: "column",
@@ -536,7 +528,7 @@ export default function DetailScreen({ employee = null, onBack, onSaveDetails, o
             borderRadius: "10px",
             background: theme.bg,
             border: `1px solid ${theme.border}`,
-            color: theme.accent,
+            color: "#6ea8fe", // Blue 300 font color
             fontWeight: "600",
             fontSize: "14px",
             cursor: "pointer",
@@ -662,7 +654,7 @@ export default function DetailScreen({ employee = null, onBack, onSaveDetails, o
 
     /* Layout Classes */
     .responsive-container {
-      max-width: 1100px; /* Tighter, more readable max-width */
+      max-width: 96%; /* Use more screen real estate */
       margin: 0 auto;
       width: 92%;
       padding: 0;
@@ -676,7 +668,7 @@ export default function DetailScreen({ employee = null, onBack, onSaveDetails, o
       background-color: #fff;
       background-clip: border-box;
       border: 1px solid ${theme.border};
-      border-radius: 8px; /* Standard enterprise radius */
+      border-radius: 4px; /* Reduced from 8px */
       box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
       padding: 24px;
       gap: 2px;
@@ -741,8 +733,8 @@ export default function DetailScreen({ employee = null, onBack, onSaveDetails, o
       white-space: nowrap;
     }
     .responsive-save-btn {
-      color: #fff;
-      background-color: ${theme.accent};
+      color: #052c65; /* Dark Blue text for contrast */
+      background-color: #6ea8fe; /* Blue 300 */
       border: 1px solid transparent;
       box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     }
@@ -765,7 +757,7 @@ export default function DetailScreen({ employee = null, onBack, onSaveDetails, o
     }
 
     /* Desktop Overrides */
-    @media (min-width: 901px) {
+    @media (min-width: 768px) {
       .responsive-container {
         width: 100%;
         padding: 0 24px;
@@ -780,7 +772,7 @@ export default function DetailScreen({ employee = null, onBack, onSaveDetails, o
         line-height: 36px;
       }
       .responsive-grid {
-        grid-template-columns: 2fr 1fr;
+        grid-template-columns: 1fr 1fr; /* Balanced 2-column layout */
         gap: 32px;
       }
       .responsive-save-bar {
@@ -801,9 +793,8 @@ export default function DetailScreen({ employee = null, onBack, onSaveDetails, o
             ) : (
                 <>
                     {/* Navbar */}
-                    <div style={styles.navContainer}>
-                        <Navbar user={employee} onLogout={onLogout} title="Details" />
-                    </div>
+                    {/* Navbar */}
+                    <Navbar user={employee} onLogout={onLogout} title="Details" />
 
                     <div className="responsive-container">
                         {/* Header */}
@@ -824,126 +815,176 @@ export default function DetailScreen({ employee = null, onBack, onSaveDetails, o
 
                         <div className="responsive-grid">
                             {/* Left Column: Professional Status */}
-                            <div className="responsive-card">
-                                <div style={styles.sectionTitle}>Professional Status</div>
+                            <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+                                <div className="responsive-card">
+                                    <div style={styles.sectionTitle}>Professional Status</div>
 
-                                <div style={styles.formGroup}>
-                                    <label style={styles.label}>Current Project</label>
-                                    {/* Custom Creatable Select */}
-                                    <CreatableSelect
-                                        options={allProjects}
-                                        value={currentProject}
-                                        onChange={(e) => {
-                                            const val = e.target.value
-                                            setCurrentProject(val)
-                                            const hasProject = val && val.trim().length > 0
-                                            setNoCurrentProject(!hasProject)
-                                            if (hasProject && availability === "Available") {
-                                                setAvailability("Occupied")
-                                            }
-                                        }}
-                                        placeholder="e.g. Project Alpha"
-                                    />
-                                    <div style={{ marginTop: "8px" }}>
-                                        <label style={styles.checkboxWrapper}>
-                                            <input
-                                                type="checkbox" disabled
-                                                checked={noCurrentProject}
-                                                onChange={(e) => {
-                                                    const checked = e.target.checked
-                                                    setNoCurrentProject(checked)
-                                                    if (checked) {
-                                                        setCurrentProject("")
-                                                    } else {
-                                                        if (availability === "Available") {
-                                                            setAvailability("Occupied")
+                                    <div style={styles.formGroup}>
+                                        <label style={styles.label}>Current Project</label>
+                                        {/* Custom Creatable Select */}
+                                        <CreatableSelect
+                                            options={allProjects}
+                                            value={currentProject}
+                                            onChange={(e) => {
+                                                const val = e.target.value
+                                                setCurrentProject(val)
+                                                const hasProject = val && val.trim().length > 0
+                                                setNoCurrentProject(!hasProject)
+                                                if (hasProject && availability === "Available") {
+                                                    setAvailability("Occupied")
+                                                }
+                                            }}
+                                            placeholder="e.g. Project Alpha"
+                                        />
+                                        <div style={{ marginTop: "8px" }}>
+                                            <label style={styles.checkboxWrapper}>
+                                                <input
+                                                    type="checkbox" disabled
+                                                    checked={noCurrentProject}
+                                                    onChange={(e) => {
+                                                        const checked = e.target.checked
+                                                        setNoCurrentProject(checked)
+                                                        if (checked) {
+                                                            setCurrentProject("")
+                                                        } else {
+                                                            if (availability === "Available") {
+                                                                setAvailability("Occupied")
+                                                            }
                                                         }
-                                                    }
-                                                }}
-                                                style={styles.checkbox}
-                                            />
-                                            <span style={styles.checkboxLabel}>I am currently not on any project</span>
-                                        </label>
+                                                    }}
+                                                    style={styles.checkbox}
+                                                />
+                                                <span style={styles.checkboxLabel}>I am currently not on any project</span>
+                                            </label>
+                                        </div>
                                     </div>
-                                </div>
-                                <br></br>
-                                <div style={styles.formGroup}>
-                                    <label style={styles.label}>Availability</label>
-                                    <div onClick={() => !noCurrentProject && setShowHint(true)} onMouseLeave={() => setShowHint(false)}>
-                                        <select
-                                            className="modern-select"
-                                            style={{ opacity: noCurrentProject ? 0.7 : 1 }}
-                                            value={noCurrentProject ? "Available" : availability}
-                                            onChange={(e) => setAvailability(e.target.value)}
-                                            disabled={noCurrentProject}
-                                        >
-                                            <option value="Available" disabled={!noCurrentProject}>Available</option>
-                                            <option value="Occupied">Occupied</option>
-                                            <option value="Partially Available">Partially Available</option>
-                                        </select>
+                                    <br></br>
+                                    <div style={styles.formGroup}>
+                                        <label style={styles.label}>Availability</label>
+                                        <div onClick={() => !noCurrentProject && setShowHint(true)} onMouseLeave={() => setShowHint(false)}>
+                                            <select
+                                                className="modern-select"
+                                                style={{ opacity: noCurrentProject ? 0.7 : 1 }}
+                                                value={noCurrentProject ? "Available" : availability}
+                                                onChange={(e) => setAvailability(e.target.value)}
+                                                disabled={noCurrentProject}
+                                            >
+                                                <option value="Available" disabled={!noCurrentProject}>Available</option>
+                                                <option value="Occupied">Occupied</option>
+                                                <option value="Partially Available">Partially Available</option>
+                                            </select>
+                                        </div>
+                                        {!noCurrentProject && showHint && (
+                                            <div style={{ ...styles.helperText, color: theme.warning, transition: 'opacity 0.2s' }}>
+                                                Requires "No current project" to be checked to select Available.
+                                            </div>
+                                        )}
                                     </div>
-                                    {!noCurrentProject && showHint && (
-                                        <div style={{ ...styles.helperText, color: theme.warning, transition: 'opacity 0.2s' }}>
-                                            Requires "No current project" to be checked to select Available.
+
+                                    {/* Partial Availability Details */}
+                                    {!noCurrentProject && availability === "Partially Available" && (
+                                        <div style={{ display: "flex", flexDirection: "column", gap: "16px", marginTop: "8px", padding: "16px", background: "#f8fafc", borderRadius: "8px", border: `1px solid ${theme.border}` }}>
+                                            <div style={styles.formGroup}>
+                                                <label style={styles.label}>Hours Available (per day)</label>
+                                                <select
+                                                    className="modern-select"
+                                                    value={hoursAvailable}
+                                                    onChange={(e) => setHoursAvailable(e.target.value)}
+                                                >
+                                                    <option value="">Select Hours</option>
+                                                    <option value="2">2 hours</option>
+                                                    <option value="4">4 hours</option>
+                                                    <option value="6">6 hours</option>
+                                                    <option value="8">Full Day</option>
+                                                </select>
+                                                {errors.hours && <div style={{ color: theme.danger, fontSize: "13px" }}>{errors.hours}</div>}
+                                            </div>
+
+                                            <div style={{ display: "flex", flexWrap: "wrap", gap: "16px" }}>
+                                                <div style={{ ...styles.formGroup, flex: 1, minWidth: "140px" }}>
+                                                    <label style={styles.label}>From Date</label>
+                                                    <input
+                                                        className="modern-input"
+                                                        type="date"
+                                                        value={fromDate}
+                                                        onChange={(e) => handleFromDateChange(e.target.value)}
+                                                        min={fromMin}
+                                                        max={toDate || undefined}
+                                                    />
+                                                    {errors.fromDate && <div style={{ color: theme.danger, fontSize: "13px" }}>{errors.fromDate}</div>}
+                                                </div>
+
+                                                <div style={{ ...styles.formGroup, flex: 1, minWidth: "140px" }}>
+                                                    <label style={styles.label}>To Date</label>
+                                                    <input
+                                                        className="modern-input"
+                                                        type="date"
+                                                        value={toDate}
+                                                        onChange={(e) => handleToDateChange(e.target.value)}
+                                                        min={toMin}
+                                                        max={toMax}
+                                                    />
+                                                    {errors.toDate && <div style={{ color: theme.danger, fontSize: "13px" }}>{errors.toDate}</div>}
+                                                </div>
+                                            </div>
+                                            <div style={styles.helperText}>
+                                                Note: Weekends are disabled. Max duration is 1 year.
+                                            </div>
                                         </div>
                                     )}
                                 </div>
 
-                                {/* Partial Availability Details */}
-                                {!noCurrentProject && availability === "Partially Available" && (
-                                    <div style={{ display: "flex", flexDirection: "column", gap: "16px", marginTop: "8px", padding: "16px", background: "#f8fafc", borderRadius: "8px", border: `1px solid ${theme.border}` }}>
-                                        <div style={styles.formGroup}>
-                                            <label style={styles.label}>Hours Available (per day)</label>
-                                            <select
-                                                className="modern-select"
-                                                value={hoursAvailable}
-                                                onChange={(e) => setHoursAvailable(e.target.value)}
+
+                                {/* Interests - Moved to Left Col */}
+                                <div className="responsive-card">
+                                    <div style={styles.sectionTitle}>Technical Interests</div>
+                                    <div style={styles.formGroup}>
+                                        <div style={styles.tagInputContainer}>
+                                            <input
+                                                id="interestInput"
+                                                placeholder="Add an interest..."
+                                                className="modern-input"
+                                                style={styles.flexInput}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === "Enter") {
+                                                        e.preventDefault()
+                                                        const val = e.target.value.trim()
+                                                        if (val) addInterest(val)
+                                                        e.target.value = ""
+                                                    }
+                                                }}
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    const el = document.getElementById("interestInput")
+                                                    if (el && el.value.trim()) {
+                                                        addInterest(el.value.trim())
+                                                        el.value = ""
+                                                    }
+                                                }}
+                                                style={styles.addBtn}
                                             >
-                                                <option value="">Select Hours</option>
-                                                <option value="2">2 hours</option>
-                                                <option value="4">4 hours</option>
-                                                <option value="6">6 hours</option>
-                                                <option value="8">Full Day</option>
-                                            </select>
-                                            {errors.hours && <div style={{ color: theme.danger, fontSize: "13px" }}>{errors.hours}</div>}
+                                                Add
+                                            </button>
                                         </div>
-
-                                        <div style={{ display: "flex", flexWrap: "wrap", gap: "16px" }}>
-                                            <div style={{ ...styles.formGroup, flex: 1, minWidth: "140px" }}>
-                                                <label style={styles.label}>From Date</label>
-                                                <input
-                                                    className="modern-input"
-                                                    type="date"
-                                                    value={fromDate}
-                                                    onChange={(e) => handleFromDateChange(e.target.value)}
-                                                    min={fromMin}
-                                                    max={toDate || undefined}
-                                                />
-                                                {errors.fromDate && <div style={{ color: theme.danger, fontSize: "13px" }}>{errors.fromDate}</div>}
-                                            </div>
-
-                                            <div style={{ ...styles.formGroup, flex: 1, minWidth: "140px" }}>
-                                                <label style={styles.label}>To Date</label>
-                                                <input
-                                                    className="modern-input"
-                                                    type="date"
-                                                    value={toDate}
-                                                    onChange={(e) => handleToDateChange(e.target.value)}
-                                                    min={toMin}
-                                                    max={toMax}
-                                                />
-                                                {errors.toDate && <div style={{ color: theme.danger, fontSize: "13px" }}>{errors.toDate}</div>}
-                                            </div>
-                                        </div>
-                                        <div style={styles.helperText}>
-                                            Note: Weekends are disabled. Max duration is 1 year.
+                                        <div style={styles.tagsWrapper}>
+                                            {interests.map((i) => (
+                                                <div key={i} style={styles.tag}>
+                                                    {i}
+                                                    <button onClick={() => removeInterest(i)} style={styles.removeTagBtn}>×</button>
+                                                </div>
+                                            ))}
+                                            {interests.length === 0 && <span style={styles.helperText}>No interests added yet.</span>}
                                         </div>
                                     </div>
-                                )}
+                                </div>
+
                             </div>
 
-                            {/* Right Column: Skills & Interests */}
+                            {/* Right Column: Skills, Interests & Previous Projects */}
                             <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+
                                 {/* Skills */}
                                 <div className="responsive-card">
                                     <div style={styles.sectionTitle}>Skills</div>
@@ -989,77 +1030,26 @@ export default function DetailScreen({ employee = null, onBack, onSaveDetails, o
                                     </div>
                                 </div>
 
-                                {/* Interests */}
-                                <div className="responsive-card">
-                                    <div style={styles.sectionTitle}>Technical Interests</div>
-                                    <div style={styles.formGroup}>
-                                        <div style={styles.tagInputContainer}>
-                                            <input
-                                                id="interestInput"
-                                                placeholder="Add an interest..."
-                                                className="modern-input"
-                                                style={styles.flexInput}
-                                                onKeyDown={(e) => {
-                                                    if (e.key === "Enter") {
-                                                        e.preventDefault()
-                                                        const val = e.target.value.trim()
-                                                        if (val) addInterest(val)
-                                                        e.target.value = ""
-                                                    }
-                                                }}
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    const el = document.getElementById("interestInput")
-                                                    if (el && el.value.trim()) {
-                                                        addInterest(el.value.trim())
-                                                        el.value = ""
-                                                    }
-                                                }}
-                                                style={styles.addBtn}
-                                            >
-                                                Add
-                                            </button>
-                                        </div>
-                                        <div style={styles.tagsWrapper}>
-                                            {interests.map((i) => (
-                                                <div key={i} style={styles.tag}>
-                                                    {i}
-                                                    <button onClick={() => removeInterest(i)} style={styles.removeTagBtn}>×</button>
-                                                </div>
-                                            ))}
-                                            {interests.length === 0 && <span style={styles.helperText}>No interests added yet.</span>}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Previous Projects */}
+                                {/* Previous Projects - Moved to Right Col */}
                                 <div className="responsive-card">
                                     <div style={styles.sectionTitle}>Previous Projects</div>
                                     <div style={styles.formGroup}>
                                         <div style={styles.tagInputContainer}>
-                                            <input
-                                                id="previousInput"
-                                                placeholder="Add a project..."
-                                                className="modern-input"
-                                                style={styles.flexInput}
-                                                onKeyDown={(e) => {
-                                                    if (e.key === "Enter") {
-                                                        e.preventDefault()
-                                                        const val = e.target.value.trim()
-                                                        if (val) addPrevious(val)
-                                                        e.target.value = ""
-                                                    }
-                                                }}
-                                            />
+                                            <div style={{ flex: 1 }}>
+                                                <CreatableSelect
+                                                    options={allProjects}
+                                                    value={currentPreviousInput}
+                                                    onChange={(e) => setCurrentPreviousInput(e.target.value)}
+                                                    placeholder="Select or type project..."
+                                                />
+                                            </div>
                                             <button
                                                 type="button"
                                                 onClick={() => {
-                                                    const el = document.getElementById("previousInput")
-                                                    if (el && el.value.trim()) {
-                                                        addPrevious(el.value.trim())
-                                                        el.value = ""
+                                                    const val = currentPreviousInput.trim()
+                                                    if (val) {
+                                                        addPrevious(val)
+                                                        setCurrentPreviousInput("")
                                                     }
                                                 }}
                                                 style={styles.addBtn}
@@ -1078,6 +1068,7 @@ export default function DetailScreen({ employee = null, onBack, onSaveDetails, o
                                         </div>
                                     </div>
                                 </div>
+
                             </div>
                         </div>
                     </div>
@@ -1095,7 +1086,7 @@ export default function DetailScreen({ employee = null, onBack, onSaveDetails, o
                             onClick={handleSave}
                             disabled={saving}
                         >
-                            {saving ? "Saving..." : "Save Changes"}
+                            {saving ? "Saving..." : " Save "}
                         </button>
                     </div>
                 </>
@@ -1103,3 +1094,4 @@ export default function DetailScreen({ employee = null, onBack, onSaveDetails, o
         </div>
     )
 }
+

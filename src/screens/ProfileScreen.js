@@ -1,6 +1,8 @@
 // Frontend/src/screens/ProfileScreen.js
+// Frontend/src/screens/ProfileScreen.js
 import React, { useEffect, useState } from "react"
-
+import { toast } from "react-toastify"
+import { Container, Row, Col, Card, Form, Button, Alert, Spinner } from "react-bootstrap";
 import Navbar from "../components/Navbar"
 import { API_URL } from "../config"
 
@@ -44,16 +46,6 @@ export default function ProfileScreen({ employee = null, onBack, onSaveProfile, 
 
   const originalIdRef = React.useRef(null)
 
-  // responsive + navbar states
-  const [isMobile, setIsMobile] = useState(typeof window !== "undefined" ? window.innerWidth <= 900 : false)
-
-
-  useEffect(() => {
-    const onResize = () => setIsMobile(window.innerWidth <= 900)
-    onResize()
-    window.addEventListener("resize", onResize)
-    return () => window.removeEventListener("resize", onResize)
-  }, [])
 
   // Initialize from prop
   useEffect(() => {
@@ -124,7 +116,6 @@ export default function ProfileScreen({ employee = null, onBack, onSaveProfile, 
     otherRole: role === "Other" && !otherRole.trim() ? "Enter role" : "",
     cluster: !clusterMode ? "Cluster required" : (clusterMode === "Multiple" && (!cluster1 || !cluster2) ? "Both clusters required" : ""),
   }
-  const onBlurField = (k) => { } // No-op since touched is removed
   const isValid = () => !Object.values(errors).some(Boolean)
 
   // Read response utility
@@ -230,232 +221,166 @@ export default function ProfileScreen({ employee = null, onBack, onSaveProfile, 
       // Update state and notify parent
       setSaving(false)
       onSaveProfile && onSaveProfile(profileOnly)
-      alert("Profile updated and confirmed on server.")
+      toast.success("Profile updated and confirmed on server.")
     } catch (err) {
       // console.error("[ProfileScreen] Save error:", err)
       setError(err.message || "Save failed — check console/network")
       setSaving(false)
-      alert(`Save failed: ${err.message}. See console/network tab.`)
+      toast.error(`Save failed: ${err.message}. See console/network tab.`)
     }
   }
 
-
-
-  // ---------- STYLES ----------
-  const styles = {
-    page: {
-      minHeight: "100vh",
-      background: "linear-gradient(180deg, #f4f7fb 0%, #ffffff 40%)", // modern soft gradient
-      padding: "0", // Removed padding for full width Navbar
-      fontFamily: "Segoe UI, Tahoma, sans-serif",
-    },
-    innerPage: {
-      padding: isMobile ? "8px 12px" : "12px 20px",
-    },
-
-
-    // profile card / form styles
-    container: {
-      maxWidth: 980,
-      margin: "0 auto",
-      padding: isMobile ? 16 : 28,
-      fontFamily: "Segoe UI, Tahoma",
-      background: "#fff",
-      borderRadius: 12,
-      boxShadow: "0 18px 48px rgba(12,36,72,0.08)",
-    },
-    headerRow: { display: "flex", alignItems: "center", marginBottom: 18, justifyContent: "space-between" },
-    pageTitle: { fontSize: 22, fontWeight: 800, color: "#072a53" },
-    backBtn: {
-      padding: "8px 14px",
-      borderRadius: 10,
-      border: "none",
-      cursor: "pointer",
-      background: "#f3f7fb",
-      color: "#072a53",
-      fontWeight: 700,
-      boxShadow: "0 6px 20px rgba(3,45,85,0.04)",
-    },
-    formRow: { display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: 18 },
-    field: { display: "flex", flexDirection: "column" },
-    label: { fontSize: 13, marginBottom: 8, color: "#374151", fontWeight: 600 },
-    input: {
-      padding: 12,
-      borderRadius: 10,
-      border: "1px solid #e8eef6",
-      background: "#fbfdff",
-      fontSize: 15,
-      outline: "none",
-      boxShadow: "inset 0 1px 0 rgba(255,255,255,0.6)",
-    },
-    select: { padding: 12, borderRadius: 10, border: "1px solid #e8eef6", background: "#fbfdff", fontSize: 15 },
-    errorBox: { background: "#fff6f6", padding: 12, borderRadius: 8, color: "#b71c1c", marginBottom: 12 },
-    actions: { display: "flex", justifyContent: "flex-end", marginTop: 20 },
-    saveBtn: {
-      padding: "12px 18px",
-      borderRadius: 12,
-      background: "linear-gradient(90deg,#0078d4,#005fa3)",
-      color: "#fff",
-      border: "none",
-      cursor: "pointer",
-      fontWeight: 800,
-      boxShadow: "0 10px 30px rgba(3, 45, 85, 0.12)",
-    },
-  }
-
   // Star Icon Component
+  /* Star Icon (Lucide Standard) */
   const IconStar = () => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="#fbbf24" stroke="#fbbf24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="#fbbf24" stroke="#fbbf24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-1">
       <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
     </svg>
   )
 
   return (
-    <div style={styles.page}>
-      {/* Navbar wrapper: outer padding removed as requested; internal header keeps consistent spacing */}
+    <div className="min-vh-100 bg-light">
       <Navbar user={employee} onLogout={onLogout} title="Profile" />
 
       {/* Hidden uploaded screenshot path (developer requested path) */}
       <img src="/mnt/data/5438abe0-f333-4e41-8233-b5ea2387a27d.png" alt="hidden" style={{ display: "none" }} />
 
-      <div style={styles.innerPage}>
-        {/* Profile card */}
-        <div style={styles.container} role="region" aria-label="Profile screen">
-          <div style={styles.headerRow}>
-            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <div style={styles.pageTitle}>Profile</div>
-              {/* Star Display */}
-              <div style={{ display: "flex", alignItems: "center", gap: "6px", background: "#fffbeb", padding: "4px 10px", borderRadius: "20px", border: "1px solid #fcd34d" }}>
-                <span style={{ fontSize: "16px", fontWeight: "700", color: "#b45309" }}>{employee?.stars || 0}</span>
-                <IconStar />
-              </div>
+      <Container className="py-4">
+        <Card className="shadow-sm border-0" style={{ borderRadius: "0px", maxWidth: "1100px", margin: "0 auto" }}>
+          <Card.Header className="bg-white border-bottom pt-4 pb-3 d-flex justify-content-between align-items-center w-100">
+            <div className="d-flex align-items-center gap-2 bg-light border border-warning rounded-pill px-3 py-1">
+              <span className="fw-bold text-dark fs-5" style={{ color: "#d97706" }}>{employee?.stars || 0}</span>
+              <IconStar />
             </div>
 
-            {/* Back moved to top-right inside card as requested */}
-            <div>
-              <button style={styles.backBtn} onClick={() => onBack && onBack()}>
+            {onBack && (
+              <Button
+                variant="light"
+                onClick={onBack}
+                className="px-3 rounded-0 border text-secondary fw-bold"
+                style={{ background: "#f8f9fa" }}
+              >
                 ← Back
-              </button>
-            </div>
-          </div>
-
-          {error && <div style={styles.errorBox}>{error}</div>}
-
-          <div style={styles.formRow}>
-            <div style={styles.field}>
-              <label style={styles.label}>Full Name</label>
-              <input
-                style={styles.input}
-                value={name} disabled
-                onChange={(e) => setName(e.target.value)}
-                onBlur={() => onBlurField("name")}
-              />
-            </div>
-
-            <div style={styles.field}>
-              <label style={styles.label}>Employee ID</label>
-              <input
-                style={styles.input}
-                value={empid} disabled
-                onChange={(e) => setEmpid(e.target.value)}
-                onBlur={() => onBlurField("empid")}
-              />
-            </div>
-
-            <div style={styles.field}>
-              <label style={styles.label}>Email</label>
-              <input
-                style={styles.input}
-                value={email} disabled
-                onChange={(e) => setEmail(e.target.value)}
-                onBlur={() => onBlurField("email")}
-              />
-            </div>
-
-            <div style={styles.field}>
-              <label style={styles.label}>Role</label>
-              <select style={styles.select} value={role} onChange={(e) => setRole(e.target.value)}>
-                <option value="">Select role</option>
-                {ROLE.map((opt) => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-            </div>
-
-            {role === "Other" && (
-              <div style={styles.field}>
-                <label style={styles.label}>Specify Role</label>
-                <input style={styles.input} value={otherRole} onChange={(e) => setOtherRole(e.target.value)} />
-              </div>
+              </Button>
             )}
+          </Card.Header>
+          <Card.Body className="p-4">
+            {error && <Alert variant="danger" className="mb-4 rounded-0">{error}</Alert>}
 
-            <div style={styles.field}>
-              <label style={styles.label}>Cluster</label>
-              <select
-                style={styles.select}
-                value={clusterMode}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setClusterMode(val);
-                  if (val !== "Multiple") {
-                    setCluster1(val);
-                    setCluster2("");
-                  } else {
-                    // If switching to Multiple, maybe keep existing as cluster1 if it's not Multiple
-                    if (clusterMode !== "Multiple" && clusterMode) {
-                      setCluster1(clusterMode);
-                    }
-                  }
+            <Row className="g-3">
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label className="fw-bold small text-muted">Full Name</Form.Label>
+                  <Form.Control value={name} onChange={(e) => setName(e.target.value)} disabled className="rounded-0" />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label className="fw-bold small text-muted">Employee ID</Form.Label>
+                  <Form.Control value={empid} onChange={(e) => setEmpid(e.target.value)} disabled className="rounded-0" />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label className="fw-bold small text-muted">Email</Form.Label>
+                  <Form.Control value={email} onChange={(e) => setEmail(e.target.value)} disabled className="rounded-0" />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label className="fw-bold small text-muted">Role</Form.Label>
+                  <Form.Select value={role} onChange={(e) => setRole(e.target.value)} className="rounded-0">
+                    <option value="">Select role</option>
+                    {ROLE.map((opt) => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+
+              {role === "Other" && (
+                <Col md={12}>
+                  <Form.Group>
+                    <Form.Label className="fw-bold small text-muted">Specify Role</Form.Label>
+                    <Form.Control value={otherRole} onChange={(e) => setOtherRole(e.target.value)} className="rounded-0" />
+                  </Form.Group>
+                </Col>
+              )}
+
+              <Col md={12}>
+                <Form.Group>
+                  <Form.Label className="fw-bold small text-muted">Cluster</Form.Label>
+                  <Form.Select
+                    value={clusterMode}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setClusterMode(val);
+                      if (val !== "Multiple") {
+                        setCluster1(val);
+                        setCluster2("");
+                      } else {
+                        if (clusterMode !== "Multiple" && clusterMode) {
+                          setCluster1(clusterMode);
+                        }
+                      }
+                    }}
+                    className="rounded-0"
+                  >
+                    <option value="">Select cluster</option>
+                    {CLUSTER.map((opt) => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+
+              {clusterMode === "Multiple" && (
+                <>
+                  <Col md={6}>
+                    <Form.Group>
+                      <Form.Label className="fw-bold small text-muted">Cluster 1</Form.Label>
+                      <Form.Select value={cluster1} onChange={(e) => setCluster1(e.target.value)} className="rounded-0">
+                        <option value="">Select Cluster 1</option>
+                        {CLUSTER.filter(c => c.value !== "Multiple").map((opt) => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                      </Form.Select>
+                    </Form.Group>
+                  </Col>
+                  <Col md={6}>
+                    <Form.Group>
+                      <Form.Label className="fw-bold small text-muted">Cluster 2</Form.Label>
+                      <Form.Select value={cluster2} onChange={(e) => setCluster2(e.target.value)} className="rounded-0">
+                        <option value="">Select Cluster 2</option>
+                        {CLUSTER.filter(c => c.value !== "Multiple" && c.value !== cluster1).map((opt) => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                      </Form.Select>
+                    </Form.Group>
+                  </Col>
+                </>
+              )}
+            </Row>
+
+            <div className="d-flex justify-content-end mt-4">
+              <button
+                className="btn fw-bold px-4"
+                onClick={handleSave}
+                disabled={saving}
+                style={{
+                  backgroundColor: "#6ea8fe",
+                  color: "#052c65",
+                  borderRadius: "0px",
+                  border: "none"
                 }}
               >
-                <option value="">Select cluster</option>
-                {CLUSTER.map((opt) => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
+                {saving ? <Spinner animation="border" size="sm" /> : "Save Profile"}
+              </button>
             </div>
 
-            {clusterMode === "Multiple" && (
-              <>
-                <div style={styles.field}>
-                  <label style={styles.label}>Cluster 1</label>
-                  <select
-                    style={styles.select}
-                    value={cluster1}
-                    onChange={(e) => setCluster1(e.target.value)}
-                  >
-                    <option value="">Select Cluster 1</option>
-                    {CLUSTER.filter(c => c.value !== "Multiple").map((opt) => (
-                      <option key={opt.value} value={opt.value}>{opt.label}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div style={styles.field}>
-                  <label style={styles.label}>Cluster 2</label>
-                  <select
-                    style={styles.select}
-                    value={cluster2}
-                    onChange={(e) => setCluster2(e.target.value)}
-                  >
-                    <option value="">Select Cluster 2</option>
-                    {CLUSTER.filter(c => c.value !== "Multiple" && c.value !== cluster1).map((opt) => (
-                      <option key={opt.value} value={opt.value}>{opt.label}</option>
-                    ))}
-                  </select>
-                </div>
-              </>
-            )}
-
-          </div>
-
-          <div style={styles.actions}>
-            <button style={styles.saveBtn} onClick={handleSave} disabled={saving}>
-              {saving ? "Saving..." : "Save Profile"}
-            </button>
-          </div>
-        </div>
-      </div>
+          </Card.Body>
+        </Card>
+      </Container>
     </div>
   )
 }

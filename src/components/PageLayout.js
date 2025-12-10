@@ -19,6 +19,7 @@ export default function PageLayout({
     onLogout,
     title,
     stickyNav = false,
+    fluid = false,
     children
 }) {
     const isMobile = useIsMobile()
@@ -49,7 +50,7 @@ export default function PageLayout({
         },
         // Optional: Inner centered container for content that shouldn't stretch too wide
         centeredContent: {
-            maxWidth: "1280px",
+            maxWidth: fluid ? "100%" : "1280px",
             margin: "0 auto",
             width: "100%",
         }
