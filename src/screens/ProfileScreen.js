@@ -221,7 +221,7 @@ export default function ProfileScreen({ employee = null, onBack, onSaveProfile, 
       // Update state and notify parent
       setSaving(false)
       onSaveProfile && onSaveProfile(profileOnly)
-      toast.success("Profile updated and confirmed on server.")
+      toast.success("Profile updated Successfully...")
     } catch (err) {
       // console.error("[ProfileScreen] Save error:", err)
       setError(err.message || "Save failed — check console/network")

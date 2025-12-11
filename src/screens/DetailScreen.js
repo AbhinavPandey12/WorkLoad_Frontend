@@ -422,7 +422,7 @@ export default function DetailScreen({ employee = null, onBack, onSaveDetails, o
             }
 
             onSaveDetails && onSaveDetails(serverRecord)
-            toast.success("Details saved and confirmed on server.")
+            toast.success("Details saved Successfully...")
         } catch (err) {
             console.error("[DetailScreen] Save error:", err)
             setError(err.message || "Save failed — check console/network")
@@ -1086,7 +1086,7 @@ export default function DetailScreen({ employee = null, onBack, onSaveDetails, o
                             onClick={handleSave}
                             disabled={saving}
                         >
-                            {saving ? "Saving..." : " Save "}
+                            {saving ? "Saving" : " Save "}
                         </button>
                     </div>
                 </>

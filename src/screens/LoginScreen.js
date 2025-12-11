@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Container, Card, Form, Alert } from "react-bootstrap";
+import { Container, Card, Form } from "react-bootstrap";
 import { toast } from "react-toastify";
 import { API_URL } from "../config";
 
@@ -10,16 +10,14 @@ export default function LoginScreen({ onLogin }) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState("");
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError("");
+
 
         // Basic validation
         if (!email || !password) {
             const msg = "Please fill in all required fields.";
-            setError(msg);
             toast.warn(msg);
             return;
         }
@@ -27,7 +25,6 @@ export default function LoginScreen({ onLogin }) {
         const emailRegex = /^[^\s@]+@tatatechnologies\.com$/;
         if (!emailRegex.test(email)) {
             const msg = "Please enter a valid email address.";
-            setError(msg);
             toast.warn(msg);
             return;
         }
@@ -45,8 +42,7 @@ export default function LoginScreen({ onLogin }) {
             const data = await response.json();
 
             if (!response.ok) {
-                const errMsg = data.error || "Something went wrong";
-                setError(errMsg);
+                const errMsg = data.error || "Something went wrong...";
                 toast.error(errMsg);
                 setLoading(false);
                 return;
@@ -63,14 +59,12 @@ export default function LoginScreen({ onLogin }) {
                     navigate("/details");
                 }
             } else {
-                const errMsg = data.error || "Invalid credentials";
-                setError(errMsg);
+                const errMsg = data.error || "Invalid credentials...";
                 toast.error(errMsg);
             }
         } catch (err) {
             console.error("Login Error:", err);
             const errMsg = `Failed to connect to server at ${API_URL}. Error: ${err.message}`;
-            setError(errMsg);
             toast.error(errMsg);
         } finally {
             setLoading(false);
@@ -99,7 +93,7 @@ export default function LoginScreen({ onLogin }) {
                             <h2 className="fw-bold mt-0" style={{ color: "#312e81", fontSize: "26px" }}>Login</h2>
                         </div>
 
-                        {error && <Alert variant="danger" className="text-center rounded-0">{error}</Alert>}
+
 
                         <Form onSubmit={handleSubmit}>
                             <Form.Group className="mb-3" controlId="formBasicEmail">
