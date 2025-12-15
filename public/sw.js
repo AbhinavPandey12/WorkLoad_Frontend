@@ -1,4 +1,12 @@
 // public/sw.js
+self.addEventListener('install', (event) => {
+    self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+    event.waitUntil(clients.claim());
+});
+
 self.addEventListener('push', function (event) {
     if (event.data) {
         const data = event.data.json();

@@ -74,6 +74,9 @@ export default function App() {
     // Usually "Cancel" means "Not now", so it might show again. 
     // "Accepted" means permission 'granted'.
 
+    // Double check we are not already showing it
+    if (showNotificationPopup) return;
+
     setShowNotificationPopup(true);
   }
 
