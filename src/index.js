@@ -5,9 +5,9 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'react-toastify/dist/ReactToastify.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-// import * as serviceWorkerRegistration from './serviceWorkerRegistration';
+import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 
-// serviceWorkerRegistration.register();
+serviceWorkerRegistration.register();
 
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
