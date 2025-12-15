@@ -3,17 +3,17 @@
   "name": "Bluebird Star",
   "icons": [
     {
-      "src": "Logo/Bluebird_logo_white.png",
+      "src": "Logo/taking-off.png",
       "sizes": "64x64 32x32 24x24 16x16",
       "type": "image/png"
     },
     {
-      "src": "Logo/Bluebird_logo_white.png",
+      "src": "Logo/taking-off.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "Logo/Bluebird_logo_white.png",
+      "src": "Logo/taking-off.png",
       "type": "image/png",
       "sizes": "512x512"
     }
