@@ -109,7 +109,7 @@ export default function ProfileScreen({ employee = null, onBack, onSaveProfile, 
   }, [employee])
 
   // Validation
-  const validateEmail = (v) => /^[a-zA-Z0-9]+\.[a-zA-Z0-9]+@tatatechnologies\.com$/i.test(v)
+  const validateEmail = (v) => /^[a-zA-Z0-9]+\.[a-zA-Z0-9]+@workload\.com$/i.test(v)
   const errors = {
     name: !name.trim() ? "Name is required" : "",
     empid: !empid.toString().trim() ? "Employee Id required" : "",

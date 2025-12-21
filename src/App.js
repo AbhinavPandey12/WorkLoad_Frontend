@@ -20,6 +20,19 @@ export default function App() {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showInstallPopup, setShowInstallPopup] = useState(false);
 
+  // initialize from sessionStorage so reload keeps logged-in user
+  const initialUser = (() => {
+    try {
+      const raw = sessionStorage.getItem("user")
+      return raw ? JSON.parse(raw) : null
+    } catch {
+      return null
+    }
+  })()
+
+  const [user, setUser] = useState(initialUser)
+  // console.log("[App] Current user state:", user);
+
   React.useEffect(() => {
     const handleBeforeInstallPrompt = (e) => {
       // Prevent the mini-infobar from appearing on mobile
@@ -59,7 +72,7 @@ export default function App() {
   const [showNotificationPopup, setShowNotificationPopup] = useState(false);
 
   // Check notification permission queue
-  const checkNotificationPermission = () => {
+  const checkNotificationPermission = React.useCallback(() => {
     if (!user) return;
 
     // Check if supported first
@@ -78,7 +91,7 @@ export default function App() {
     if (showNotificationPopup) return;
 
     setShowNotificationPopup(true);
-  }
+  }, [user, showNotificationPopup]);
 
   const handleEnableNotifications = async () => {
     if (user && user.empid) {
@@ -102,18 +115,7 @@ export default function App() {
 
 
 
-  // initialize from sessionStorage so reload keeps logged-in user
-  const initialUser = (() => {
-    try {
-      const raw = sessionStorage.getItem("user")
-      return raw ? JSON.parse(raw) : null
-    } catch {
-      return null
-    }
-  })()
 
-  const [user, setUser] = useState(initialUser)
-  // console.log("[App] Current user state:", user);
 
   React.useEffect(() => {
     if (deferredPrompt && user) {
@@ -126,7 +128,7 @@ export default function App() {
       }, 1000);
       return () => clearTimeout(t);
     }
-  }, [deferredPrompt, user, showInstallPopup]);
+  }, [deferredPrompt, user, showInstallPopup, checkNotificationPermission]);
 
   const handleLogin = (userData) => {
     try {

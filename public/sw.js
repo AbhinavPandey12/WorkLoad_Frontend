@@ -13,8 +13,8 @@ self.addEventListener('push', function (event) {
         const title = data.title || "TATA PWA";
         const options = {
             body: data.message || "New notification",
-            icon: '/Logo/MainLogo.png',
-            badge: '/Logo/MainLogo.png',
+            icon: '/Logo/Workload.png',
+            badge: '/Logo/Workload.png',
             data: { url: data.url || '/' }
         };
 

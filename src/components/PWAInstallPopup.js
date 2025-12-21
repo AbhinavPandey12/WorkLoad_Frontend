@@ -4,7 +4,7 @@ const PWAInstallPopup = ({ onInstall, onClose }) => {
     return (
         <div style={styles.overlay}>
             <div style={styles.popup}>
-                <h3 style={styles.title}>Install Bluebird Star App</h3>
+                <h3 style={styles.title}>Install WorkLoad App</h3>
                 <p style={styles.message}>
                     Install our app for a better experience, quick access, and offline capabilities.
                 </p>

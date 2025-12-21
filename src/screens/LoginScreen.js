@@ -23,7 +23,7 @@ export default function LoginScreen({ onLogin }) {
             return;
         }
 
-        const emailRegex = /^[^\s@]+@tatatechnologies\.com$/;
+        const emailRegex = /^[^\s@]+@workload\.com$/;
         if (!emailRegex.test(email)) {
             const msg = "Please enter a valid email address.";
             toast.warn(msg);
@@ -57,9 +57,15 @@ export default function LoginScreen({ onLogin }) {
                 if (typeof onLogin === "function") onLogin(data.user);
 
                 const role_type = (data.user?.role_type || "").trim().toLowerCase();
+                
+                // Explicit Role Redirection based on user request
                 if (role_type === "manager") {
                     navigate("/dashboard");
+                } else if (role_type === "ic" || role_type === "employee") {
+                    // IC (Individual Contributor) / Employee UI
+                    navigate("/details");
                 } else {
+                    // Fallback to details if role is undefined or unknown (safe default)
                     navigate("/details");
                 }
             } else {
@@ -93,7 +99,7 @@ export default function LoginScreen({ onLogin }) {
                 <Card className="p-4 shadow-sm border-0" style={{ maxWidth: "400px", width: "100%", borderRadius: "0px" }}>
                     <Card.Body>
                         <div className="text-center mb-4">
-                            <img src="../../Logo/Bluebird_logo_white.png" alt="Bluebird Logo" style={{ maxWidth: "150px", marginBottom: "20px" }} />
+                            <img src="/Logo/Workload.png" alt="Bluebird Logo" style={{ maxWidth: "150px", marginBottom: "20px" }} />
                             <h2 className="fw-bold mt-0" style={{ color: "#312e81", fontSize: "26px" }}>Login</h2>
                         </div>
 
@@ -104,7 +110,7 @@ export default function LoginScreen({ onLogin }) {
                                 <Form.Label className="fw-bold" style={{ color: "#374151" }}>Email Address</Form.Label>
                                 <Form.Control
                                     type="email"
-                                    placeholder="Enter your email @tatatechnologies.com"
+                                    placeholder="Enter your email @workload.com"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     disabled={loading}
@@ -158,7 +164,7 @@ export default function LoginScreen({ onLogin }) {
                             </a>
                         </div>
                         <div className="text-center mt-4 text-muted small" style={{ color: "#888" }}>
-                            ©2025 Tata Technologies
+                            ©2025 Abhinav Pandey Projects
                         </div>
                     </Card.Body>
                 </Card>

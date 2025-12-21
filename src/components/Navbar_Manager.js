@@ -109,8 +109,8 @@ export default function Navbar_Manager({ user, onLogout, title = "Employee Dashb
             <Offcanvas show={showMenu} onHide={handleClose} style={{ width: "250px", background: "#052c65", color: "white" }}>
                 <Offcanvas.Header style={{ borderBottom: "2px solid rgba(255,255,255,0.2)", padding: "10px 0px" }}>
                     <div className="d-flex align-items-center gap-2">
-                        <img src="/Logo/MainLogo.png" alt="Logo" style={{ height: "65px", objectFit: "contain" }} />
-                        <span style={{ fontSize: "20px", fontWeight: "bold", letterSpacing: "0.5px", whiteSpace: "nowrap", marginLeft: "-10px" }}>Bluebird Star</span>
+                        <img src="/Logo/Workload.png" alt="Logo" style={{ height: "65px", objectFit: "contain" }} />
+                        <span style={{ fontSize: "20px", fontWeight: "bold", letterSpacing: "0.5px", whiteSpace: "nowrap", marginLeft: "-10px" }}>WorkLoad</span>
                     </div>
                 </Offcanvas.Header>
                 <Offcanvas.Body className="p-0">
