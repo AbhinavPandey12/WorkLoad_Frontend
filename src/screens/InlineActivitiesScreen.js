@@ -121,8 +121,8 @@ export default function InlineActivitiesScreen({ onLogout }) {
 
     const handleEditClick = (e, project) => {
         e.stopPropagation()
-        setEditingProjectId(project.id)
-        setExpandedProjectId(project.id) // Ensure it's expanded
+        setEditingProjectId(project.project_id)
+        setExpandedProjectId(project.project_id) // Ensure it's expanded
         setFormData({
             project_name: project.project_name,
             leader_name: project.leader_name,
@@ -159,7 +159,7 @@ export default function InlineActivitiesScreen({ onLogout }) {
             const updatedProject = await res.json()
 
             // Update local state
-            const updatedProjects = projects.map(p => p.id === editingProjectId ? updatedProject : p)
+            const updatedProjects = projects.map(p => p.project_id === editingProjectId ? updatedProject : p)
             setProjects(updatedProjects)
             setFilteredProjects(updatedProjects) // Re-apply filter might be needed, but this is simple sync
 
@@ -253,6 +253,7 @@ export default function InlineActivitiesScreen({ onLogout }) {
             display: "grid",
             gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", // Restored size
             gap: "24px", // Restored gap
+            alignItems: "start", // Prevent cards from stretching to row height
         },
         card: (status) => {
             let borderTopColor = theme.colors.border
@@ -444,14 +445,14 @@ export default function InlineActivitiesScreen({ onLogout }) {
                         <div
                             key={i}
                             style={styles.card(p.status)}
-                            onClick={() => !editingProjectId && setExpandedProjectId(expandedProjectId === p.id ? null : p.id)}
+                            onClick={() => !editingProjectId && setExpandedProjectId(expandedProjectId === p.project_id ? null : p.project_id)}
                             onMouseEnter={(e) => Object.assign(e.currentTarget.style, styles.cardHover)}
                             onMouseLeave={(e) => {
                                 e.currentTarget.style.transform = "translateY(0)"
                                 e.currentTarget.style.boxShadow = theme.shadows.card
                             }}
                         >
-                            {editingProjectId === p.id ? (
+                            {editingProjectId === p.project_id ? (
                                 // --- EDIT MODE ---
                                 <div style={styles.editContainer} onClick={e => e.stopPropagation()}>
                                     <div style={styles.editField}>
@@ -572,7 +573,7 @@ export default function InlineActivitiesScreen({ onLogout }) {
                                         <div style={styles.cardSubtitle}>
                                             <span style={{ display: "flex", alignItems: "center" }}>
                                                 <Icons.User />
-                                                <span style={{ marginRight: "4px" }}>Leader:</span> {p.leader_name}
+                                                <span style={{ marginRight: "4px" }}>Leader:</span> {p.manager_name}
                                             </span>
                                         </div>
 
@@ -589,7 +590,7 @@ export default function InlineActivitiesScreen({ onLogout }) {
                                     </div>
 
                                     {/* Description in Middle/Bottom (Before Footer) */}
-                                    {expandedProjectId === p.id && (
+                                    {expandedProjectId === p.project_id && (
                                         <>
                                             <div style={styles.description}>
                                                 <div style={{ display: "flex", alignItems: "center", marginBottom: "4px" }}>
@@ -630,7 +631,7 @@ export default function InlineActivitiesScreen({ onLogout }) {
                                                 </span>
                                             )}
                                         </div>
-                                        {isManager && expandedProjectId === p.id && String(p.manager_id) === String(user.employee_id) && (
+                                        {isManager && expandedProjectId === p.project_id && String(p.manager_id) === String(user.employee_id) && (
                                             <button
                                                 style={{ ...styles.editBtn, padding: "6px 12px", fontSize: "12px" }}
                                                 onClick={(e) => handleEditClick(e, p)}

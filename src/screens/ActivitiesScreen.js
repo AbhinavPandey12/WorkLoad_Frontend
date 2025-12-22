@@ -365,7 +365,7 @@ export default function ActivitiesScreen({ onLogout }) {
                                                 {projects.map((p) => (
                                                     <tr key={p.id} onClick={() => handleRowClick(p)} style={{ cursor: "pointer" }}>
                                                         <td className="fw-bold text-primary">{p.project_name}</td>
-                                                        <td className="text-muted small">{p.leader_name}</td>
+                                                        <td className="text-muted small">{p.manager_name}</td>
                                                         <td onClick={(e) => e.stopPropagation()}>
                                                             <Form.Select
                                                                 size="sm"

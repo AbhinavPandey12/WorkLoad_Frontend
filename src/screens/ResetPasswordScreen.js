@@ -123,10 +123,27 @@ export default function ResetPasswordScreen({ user, onLogout }) {
                                 className="btn w-100 fw-bold py-2"
                                 disabled={loading}
                                 style={{
-                                    backgroundColor: "#6ea8fe",
-                                    color: "#052c65",
-                                    borderRadius: "0px",
-                                    border: "none"
+                                    backgroundColor: "#2563eb",
+                                    color: "#ffffff",
+                                    borderRadius: "8px",
+                                    border: "none",
+                                    padding: "12px",
+                                    fontSize: "14px",
+                                    letterSpacing: "0.5px",
+                                    boxShadow: "0 4px 6px rgba(37, 99, 235, 0.2)",
+                                    transition: "all 0.2s ease"
+                                }}
+                                onMouseEnter={(e) => {
+                                    if (!loading) {
+                                        e.target.style.backgroundColor = "#1d4ed8";
+                                        e.target.style.transform = "translateY(-1px)";
+                                    }
+                                }}
+                                onMouseLeave={(e) => {
+                                    if (!loading) {
+                                        e.target.style.backgroundColor = "#2563eb";
+                                        e.target.style.transform = "translateY(0)";
+                                    }
                                 }}
                             >
                                 {loading ? <Spinner animation="border" size="sm" /> : "Update Password"}
