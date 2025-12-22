@@ -88,6 +88,7 @@ export default function LoginScreen({ onLogin }) {
             left: 0,
             width: "100%",
             height: "100%",
+            overflowY: "auto",
             background: "radial-gradient(at 0% 0%, hsla(210, 80%, 95%, 1) 0, transparent 50%), radial-gradient(at 50% 0%, hsla(220, 80%, 90%, 1) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(200, 80%, 95%, 1) 0, transparent 50%)", // Blue modern gradient
             backgroundImage: "radial-gradient(at 40% 20%, hsla(215,100%,94%,1) 0px, transparent 50%), radial-gradient(at 80% 0%, hsla(205,100%,92%,1) 0px, transparent 50%), radial-gradient(at 0% 50%, hsla(220,100%,96%,1) 0px, transparent 50%)", // Blue elegant mesh
             display: "flex",
@@ -95,16 +96,16 @@ export default function LoginScreen({ onLogin }) {
             justifyContent: "center",
             zIndex: 2000
         }}>
-            <Container className="d-flex justify-content-center align-items-center" style={{ minHeight: "100%" }}>
-                <Card className="p-4 shadow-sm border-0" style={{ maxWidth: "400px", width: "100%", borderRadius: "0px" }}>
+            <Container className="d-flex flex-column justify-content-center align-items-center" style={{ minHeight: "100%", padding: "50px 20px" }}>
+                <Card className="p-3 shadow-sm border-0" style={{ maxWidth: "400px", width: "100%", borderRadius: "0px", margin: "auto" }}>
                     <Card.Body>
-                        <div className="text-center mb-4">
-                            <img src="/Logo/Workload.png" alt="Bluebird Logo" style={{ maxWidth: "150px", marginBottom: "20px" }} />
+                        <div className="text-center mb-3">
+                            <img src="/Logo/Workload.png" alt="Bluebird Logo" style={{ maxWidth: "200px", height: "200px" }} />
                             <h2 className="fw-bold mt-0" style={{ color: "#312e81", fontSize: "26px" }}>Login</h2>
+                            <p className="text-center mt-2 mb-3" style={{ fontSize: "0.9rem", color: "#4b5563" }}>
+                                You can access the app by logging in as either a <span style={{ color: "#2563eb", fontWeight: "600" }}>Manager</span> or an <span style={{ color: "#2563eb", fontWeight: "600" }}>Employee</span>.
+                            </p>
                         </div>
-
-
-
                         <Form onSubmit={handleSubmit}>
                             <Form.Group className="mb-3" controlId="formBasicEmail">
                                 <Form.Label className="fw-bold" style={{ color: "#374151" }}>Email Address</Form.Label>
@@ -114,7 +115,7 @@ export default function LoginScreen({ onLogin }) {
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     disabled={loading}
-                                    className="p-3"
+                                    className="p-2"
                                     style={{
                                         background: "#fbfdff",
                                         borderRadius: "0px",
@@ -131,7 +132,7 @@ export default function LoginScreen({ onLogin }) {
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     disabled={loading}
-                                    className="p-3"
+                                    className="p-2"
                                     style={{
                                         background: "#fbfdff",
                                         borderRadius: "0px",
@@ -140,7 +141,7 @@ export default function LoginScreen({ onLogin }) {
                                 />
                             </Form.Group>
 
-                            <button type="submit" className="btn w-100 p-3 fw-bold mt-2" disabled={loading}
+                            <button type="submit" className="btn w-100 p-2 fw-bold mt-2" disabled={loading}
                                 style={{
                                     backgroundColor: "#6ea8fe", // Blue 300
                                     border: "none",
@@ -152,7 +153,7 @@ export default function LoginScreen({ onLogin }) {
                             </button>
                         </Form>
 
-                        <div className="text-center mt-3">
+                        <div className="text-center mt-2">
                             <a
                                 href="https://forms.gle/68Wx9e9W6wVEw9PTA"
                                 target="_blank"
@@ -163,7 +164,7 @@ export default function LoginScreen({ onLogin }) {
                                 Facing Problem Logging in?
                             </a>
                         </div>
-                        <div className="text-center mt-4 text-muted small" style={{ color: "#888" }}>
+                        <div className="text-center mt-3 text-muted small" style={{ color: "#888" }}>
                             ©2025 Abhinav Pandey Projects
                         </div>
                     </Card.Body>
