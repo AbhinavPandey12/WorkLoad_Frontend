@@ -155,7 +155,7 @@ export default function LoginScreen({ onLogin }) {
 
                         <div className="text-center mt-2">
                             <a
-                                href="https://forms.gle/68Wx9e9W6wVEw9PTA"
+                                href="https://forms.gle/VrtgYJNBqbPsRDEaA"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-decoration-none"

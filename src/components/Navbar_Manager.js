@@ -150,7 +150,7 @@ export default function Navbar_Manager({ user, onLogout, title = "Employee Dashb
                             </svg>
                             Inline Activities
                         </Nav.Link>
-                        <Nav.Link onClick={() => { handleClose(); window.open("https://forms.gle/68Wx9e9W6wVEw9PTA", "_blank"); }} className="text-white px-2 py-2 rounded d-flex align-items-center" style={{ fontWeight: "500", letterSpacing: "0.3px", transition: "all 0.2s" }}>
+                        <Nav.Link onClick={() => { handleClose(); window.open("https://forms.gle/VrtgYJNBqbPsRDEaA", "_blank"); }} className="text-white px-2 py-2 rounded d-flex align-items-center" style={{ fontWeight: "500", letterSpacing: "0.3px", transition: "all 0.2s" }}>
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="me-3 opacity-75">
                                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                             </svg>
