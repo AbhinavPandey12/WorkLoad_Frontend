@@ -79,4 +79,4 @@ workload_frontend/
 
 ## 🔗 Related Repositories
 
-- **Backend Repository:** [EmployeeAvailabilityManagementTool--Backend](https://github.com/AbhinavPandey12/EmployeeAvailabilityManagementTool--Backend.git)
+- **Backend Repository:** [WorkLoad_Backend](https://github.com/AbhinavPandey12/WorkLoad_Backend)
