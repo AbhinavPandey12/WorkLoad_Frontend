@@ -322,7 +322,7 @@ export default function EmployeeCard({ employee = {}, getInitials, currentUser, 
       // Clean undefined
       Object.keys(payload).forEach(k => payload[k] === undefined && delete payload[k])
 
-      const url = `${API_URL}/api/employees/${employee.empid || employee.id}`
+      const url = `${API_URL}/api/employees/${employee.employee_id}`
       const res = await fetch(url, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -647,11 +647,14 @@ export default function EmployeeCard({ employee = {}, getInitials, currentUser, 
     // console.log("Optimistic star update:", newStarCount);
 
     try {
-      const url = `${API_URL}/api/employees/${employee.empid || employee.id}/stars`
+      const url = `${API_URL}/api/employees/${employee.employee_id}/stars`
       const res = await fetch(url, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ stars: newStarCount })
+        body: JSON.stringify({ 
+          stars: newStarCount,
+          given_by: currentUser?.employee_id
+        })
       })
       if (!res.ok) throw new Error("Failed to update star count")
       if (onRefresh) onRefresh()
@@ -821,9 +824,9 @@ export default function EmployeeCard({ employee = {}, getInitials, currentUser, 
                       value={formData.current_project || ""}
                       onChange={e => setFormData({ ...formData, current_project: e.target.value })}
                       placeholder="Project Name"
-                      list={`project-options-${employee.empid || employee.id}`}
+                      list={`project-options-${employee.employee_id}`}
                     />
-                    <datalist id={`project-options-${employee.empid || employee.id}`}>
+                    <datalist id={`project-options-${employee.employee_id}`}>
                       {allProjects.map((proj, idx) => (
                         <option key={idx} value={proj} />
                       ))}

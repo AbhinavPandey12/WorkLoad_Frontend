@@ -17,7 +17,7 @@ function urlBase64ToUint8Array(base64String) {
     return outputArray;
 }
 
-export const subscribeToPush = async (empid) => {
+export const subscribeToPush = async (employee_id) => {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
         console.error("Push messaging is not supported");
         return false;
@@ -41,7 +41,7 @@ export const subscribeToPush = async (empid) => {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ subscription, empid }),
+            body: JSON.stringify({ subscription, employee_id }),
         });
 
         if (response.ok) {

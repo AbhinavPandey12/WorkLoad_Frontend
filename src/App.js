@@ -94,8 +94,8 @@ export default function App() {
   }, [user, showNotificationPopup]);
 
   const handleEnableNotifications = async () => {
-    if (user && user.empid) {
-      await subscribeToPush(user.empid);
+    if (user && user.employee_id) {
+      await subscribeToPush(user.employee_id);
       setShowNotificationPopup(false);
     }
   }

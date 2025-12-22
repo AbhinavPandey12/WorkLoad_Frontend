@@ -146,7 +146,7 @@ export default function InlineActivitiesScreen({ onLogout }) {
         e.stopPropagation()
         setSaving(true)
         try {
-            const payload = { ...formData, user_empid: user.empid }
+            const payload = { ...formData, manager_id: user.employee_id }
 
             const res = await fetch(`${API_URL}/api/projects/${editingProjectId}`, {
                 method: "PATCH",
@@ -630,7 +630,7 @@ export default function InlineActivitiesScreen({ onLogout }) {
                                                 </span>
                                             )}
                                         </div>
-                                        {isManager && expandedProjectId === p.id && String(p.empid) === String(user.empid) && (
+                                        {isManager && expandedProjectId === p.id && String(p.manager_id) === String(user.employee_id) && (
                                             <button
                                                 style={{ ...styles.editBtn, padding: "6px 12px", fontSize: "12px" }}
                                                 onClick={(e) => handleEditClick(e, p)}

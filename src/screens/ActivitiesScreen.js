@@ -101,9 +101,9 @@ export default function ActivitiesScreen({ onLogout }) {
         }
         setSubmitting(true)
         try {
-            // For Update: user_empid is required for ownership check. 
-            // For Create: empid is used as owner.
-            const payload = { ...formData, user_empid: user.empid, empid: user.empid }
+            // For Update: manager_id is required for ownership check. 
+            // For Create: employee_id is used as owner.
+            const payload = { ...formData, manager_id: user.employee_id }
 
             let url = `${API_URL}/api/projects`
             let method = "POST"
@@ -159,7 +159,7 @@ export default function ActivitiesScreen({ onLogout }) {
             const res = await fetch(`${API_URL}/api/projects/${id}`, {
                 method: "DELETE",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ user_empid: user.empid })
+                body: JSON.stringify({ manager_id: user.employee_id })
             })
             if (res.ok) {
                 fetchProjects()
@@ -180,7 +180,7 @@ export default function ActivitiesScreen({ onLogout }) {
 
     const handleActionEdit = () => {
         if (!selectedProject) return
-        if (String(selectedProject.empid) !== String(user?.empid)) {
+        if (String(selectedProject.manager_id) !== String(user?.employee_id)) {
             toast.error("You can only edit your own activities")
             setShowActionModal(false)
             return
@@ -203,7 +203,7 @@ export default function ActivitiesScreen({ onLogout }) {
 
     const handleActionDelete = () => {
         if (!selectedProject) return
-        if (String(selectedProject.empid) !== String(user?.empid)) {
+        if (String(selectedProject.manager_id) !== String(user?.employee_id)) {
             toast.error("You can only delete your own activities")
             setShowActionModal(false)
             return
@@ -371,7 +371,7 @@ export default function ActivitiesScreen({ onLogout }) {
                                                                 size="sm"
                                                                 value={p.status}
                                                                 onChange={(e) => handleStatusChange(p.id, e.target.value)}
-                                                                disabled={String(p.empid) !== String(user?.empid)}
+                                                                disabled={String(p.manager_id) !== String(user?.employee_id)}
                                                                 style={{
                                                                     fontSize: "12px",
                                                                     width: "50%",
@@ -388,7 +388,7 @@ export default function ActivitiesScreen({ onLogout }) {
                                                         </td>
                                                         <td onClick={(e) => e.stopPropagation()}>
                                                             <div className="d-flex align-items-center justify-content-end gap-2">
-                                                                {String(p.empid) === String(user?.empid) && (
+                                                                {String(p.manager_id) === String(user?.employee_id) && (
                                                                     <Button
                                                                         variant="outline-danger"
                                                                         size="sm"
@@ -424,7 +424,7 @@ export default function ActivitiesScreen({ onLogout }) {
                         <small className="text-muted">Select an action below</small>
                     </div>
 
-                    {selectedProject && String(selectedProject.empid) !== String(user?.empid) && (
+                    {selectedProject && String(selectedProject.manager_id) !== String(user?.employee_id) && (
                         <div className="alert alert-warning border-0 small mb-3 text-center" style={{ backgroundColor: "#fff3cd", color: "#856404" }}>
                             🔒 You can only edit activities you created.
                         </div>
@@ -435,7 +435,7 @@ export default function ActivitiesScreen({ onLogout }) {
                             variant="primary"
                             size="lg"
                             onClick={handleActionEdit}
-                            disabled={!selectedProject || String(selectedProject.empid) !== String(user?.empid)}
+                            disabled={!selectedProject || String(selectedProject.manager_id) !== String(user?.employee_id)}
                             className="shadow-sm border-0 d-flex align-items-center justify-content-center gap-2"
                             style={{ borderRadius: "12px", fontWeight: "600", fontSize: "16px", padding: "12px" }}
                         >
@@ -445,7 +445,7 @@ export default function ActivitiesScreen({ onLogout }) {
                             variant="danger"
                             size="lg"
                             onClick={handleActionDelete}
-                            disabled={!selectedProject || String(selectedProject.empid) !== String(user?.empid)}
+                            disabled={!selectedProject || String(selectedProject.manager_id) !== String(user?.employee_id)}
                             className="shadow-sm border-0 d-flex align-items-center justify-content-center gap-2"
                             style={{ borderRadius: "12px", fontWeight: "600", fontSize: "16px", padding: "12px" }}
                         >

@@ -64,7 +64,7 @@ export default function HomeScreen({ onLogout, employee }) {
 
       if (updatesToSync.length > 0) {
         Promise.allSettled(updatesToSync.map(emp => {
-          const url = `${API_URL}/api/employees/${emp.empid || emp.id}`
+          const url = `${API_URL}/api/employees/${emp.employee_id}`
           return fetch(url, {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
@@ -204,8 +204,8 @@ export default function HomeScreen({ onLogout, employee }) {
     }
 
     filtered.sort((a, b) => {
-      const idA = a.empid || a.id || 0;
-      const idB = b.empid || b.id || 0;
+      const idA = a.employee_id || 0;
+      const idB = b.employee_id || 0;
       return idA > idB ? 1 : -1;
     });
 
@@ -333,7 +333,7 @@ export default function HomeScreen({ onLogout, employee }) {
         <Row className="g-4">
           {filteredEmployees.length > 0 ? (
             filteredEmployees.map((emp) => (
-              <Col key={emp.empid || emp.id || emp.name} xs={12} md={6} lg={4} xl={3}>
+              <Col key={emp.employee_id || emp.name} xs={12} md={6} lg={4} xl={3}>
                 <EmployeeCard
                   employee={emp}
                   getInitials={getInitials}

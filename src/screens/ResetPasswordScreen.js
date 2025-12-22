@@ -42,7 +42,7 @@ export default function ResetPasswordScreen({ user, onLogout }) {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    empid: user.empid,
+                    employee_id: user.employee_id,
                     currentPassword,
                     newPassword
                 }),
