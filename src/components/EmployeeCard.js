@@ -2,6 +2,8 @@ import { useState, useEffect } from "react"
 import { toast } from "react-toastify"
 import { Button } from "react-bootstrap"
 import { API_URL } from "../config"
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 export default function EmployeeCard({ employee = {}, getInitials, currentUser, onRefresh, allProjects = [] }) {
   const [expanded, setExpanded] = useState(false)
@@ -877,23 +879,55 @@ export default function EmployeeCard({ employee = {}, getInitials, currentUser, 
                       </div>
                       <div style={styles.editField}>
                         <label style={styles.editLabel}>From Date</label>
-                        <input
-                          style={styles.editInput}
-                          type="date"
-                          value={formData.from_date || ""}
-                          onChange={e => handleFromDateChange(e.target.value)}
-                          min={todayISO()}
+                        <DatePicker
+                            selected={formData.from_date ? new Date(formData.from_date) : null}
+                            onChange={(date) => {
+                                if (date) {
+                                    const offset = date.getTimezoneOffset()
+                                    const localDate = new Date(date.getTime() - (offset * 60 * 1000))
+                                    const val = localDate.toISOString().split('T')[0]
+                                    handleFromDateChange(val)
+                                } else {
+                                    handleFromDateChange("")
+                                }
+                            }}
+                            dateFormat="yyyy-MM-dd"
+                            className="form-control"
+                            placeholderText="YYYY-MM-DD"
+                            minDate={new Date()}
+                            filterDate={(date) => {
+                                const day = date.getDay();
+                                return day !== 0 && day !== 6;
+                            }}
+                            wrapperClassName="w-100"
+                            customInput={<input style={styles.editInput} />}
                         />
                         {validationErrors.fromDate && <div style={{ color: "#d32f2f", fontSize: "11px" }}>{validationErrors.fromDate}</div>}
                       </div>
                       <div style={styles.editField}>
                         <label style={styles.editLabel}>To Date</label>
-                        <input
-                          style={styles.editInput}
-                          type="date"
-                          value={formData.to_date || ""}
-                          onChange={e => handleToDateChange(e.target.value)}
-                          min={formData.from_date || todayISO()}
+                        <DatePicker
+                            selected={formData.to_date ? new Date(formData.to_date) : null}
+                            onChange={(date) => {
+                                if (date) {
+                                    const offset = date.getTimezoneOffset()
+                                    const localDate = new Date(date.getTime() - (offset * 60 * 1000))
+                                    const val = localDate.toISOString().split('T')[0]
+                                    handleToDateChange(val)
+                                } else {
+                                    handleToDateChange("")
+                                }
+                            }}
+                            dateFormat="yyyy-MM-dd"
+                            className="form-control"
+                            placeholderText="YYYY-MM-DD"
+                            minDate={formData.from_date ? new Date(formData.from_date) : new Date()}
+                            filterDate={(date) => {
+                                const day = date.getDay();
+                                return day !== 0 && day !== 6;
+                            }}
+                            wrapperClassName="w-100"
+                            customInput={<input style={styles.editInput} />}
                         />
                         {validationErrors.toDate && <div style={{ color: "#d32f2f", fontSize: "11px" }}>{validationErrors.toDate}</div>}
                       </div>

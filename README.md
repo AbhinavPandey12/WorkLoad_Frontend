@@ -20,9 +20,11 @@ WorkLoad is a comprehensive Progressive Web Application (PWA) designed to simpli
 - **Availability Tracking:** The **Manager Dashboard** provides a comprehensive view of all employee schedules, allowing managers to instantly visualize team capacity and individual availability.
 - **Inline Activities:** Managers can create and assign **Inline Activities**. These tasks appear on employee dashboards, ensuring clear communication of priorities.
 - **Performance Recognition:** Managers can award **Stars** to employees based on their performance and timely updates, fostering a gamified and motivating environment.
+- **Data Integrity:** **Managers have full edit access** to any employee's profile, including projects, availability, and skills, ensuring data accuracy if an employee is unavailable.
 
 ### For Employees
-- **Mandatory Updates:** To ensure data accuracy, employees are **forced to update their Detail Screen every 15 days**. If the data is stale, access to other features is restricted until the details are refreshed.
+- **Mandatory Updates:** Employees are prompted to update their details regularly.
+- **Visual Compliance:** If an employee's details haven't been updated in **15 days**, their card displays a **Blue Strip** on the Manager Dashboard, signaling the need for a refresh.
 - **Task Visibility:** Employees can view **Inline Activities** created by managers on their dashboard. These entries are read-only for employees, serving as a clear directive of assigned work.
 
 ## 📂 Project Structure
@@ -70,6 +72,7 @@ workload_frontend/
     - New activity postings (Broadcast to ICs).
     - Login alerts (Security).
     - Profile and Password changes.
+    - **Staleness Alerts:** Notifications sent to both Manager and Employee if details are outdated (>15 days).
     - Enable this in the **Profile Screen**.
 
 ## 🛡️ Protected Routes

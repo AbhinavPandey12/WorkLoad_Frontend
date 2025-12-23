@@ -6,6 +6,8 @@ import Navbar from "../components/Navbar"
 import Loader from "../components/Loader"
 import CreatableSelect from "../components/CreatableSelect"
 import { Container, Row, Col, Card, Form, Button, Table, Spinner, Modal } from "react-bootstrap"
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 export default function ActivitiesScreen({ onLogout }) {
     const navigate = useNavigate()
@@ -265,12 +267,26 @@ export default function ActivitiesScreen({ onLogout }) {
                                         <Col md={6}>
                                             <Form.Group className="mb-3">
                                                 <Form.Label className="fw-semibold">End Date</Form.Label>
-                                                <Form.Control
-                                                    type="date"
-                                                    name="end_date"
-                                                    value={formData.end_date}
-                                                    onChange={handleChange}
-                                                    required
+                                                <DatePicker
+                                                    selected={formData.end_date ? new Date(formData.end_date) : null}
+                                                    onChange={(date) => {
+                                                        if (date) {
+                                                            const offset = date.getTimezoneOffset()
+                                                            const localDate = new Date(date.getTime() - (offset * 60 * 1000))
+                                                            const val = localDate.toISOString().split('T')[0]
+                                                            setFormData({ ...formData, end_date: val })
+                                                        } else {
+                                                            setFormData({ ...formData, end_date: "" })
+                                                        }
+                                                    }}
+                                                    dateFormat="yyyy-MM-dd"
+                                                    className="form-control"
+                                                    placeholderText="YYYY-MM-DD"
+                                                    filterDate={(date) => {
+                                                        const day = date.getDay();
+                                                        return day !== 0 && day !== 6;
+                                                    }}
+                                                    wrapperClassName="w-100"
                                                 />
                                             </Form.Group>
                                         </Col>

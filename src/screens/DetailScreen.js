@@ -6,6 +6,8 @@ import { API_URL } from "../config"
 
 import Loader from "../components/Loader"
 import CreatableSelect from "../components/CreatableSelect"
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 export default function DetailScreen({ employee = null, onBack, onSaveDetails, onLogout, onProfile }) {
     // ---------- LOGIC (Updated for Normalized Schema) ----------
@@ -428,12 +430,55 @@ export default function DetailScreen({ employee = null, onBack, onSaveDetails, o
                                             <div style={{ display: "flex", gap: "12px", marginTop: "12px" }}>
                                                 <div style={{ flex: 1 }}>
                                                     <label style={styles.label}>From Date</label>
-                                                    <input className="modern-input" type="date" value={fromDate} onChange={(e) => handleFromDateChange(e.target.value)} min={fromMin} />
+                                                    <DatePicker
+                                                        selected={fromDate ? new Date(fromDate) : null}
+                                                        onChange={(date) => {
+                                                            if (date) {
+                                                                const offset = date.getTimezoneOffset()
+                                                                const localDate = new Date(date.getTime() - (offset * 60 * 1000))
+                                                                const val = localDate.toISOString().split('T')[0]
+                                                                handleFromDateChange(val)
+                                                            } else {
+                                                                handleFromDateChange("")
+                                                            }
+                                                        }}
+                                                        dateFormat="yyyy-MM-dd"
+                                                        className="modern-input"
+                                                        placeholderText="YYYY-MM-DD"
+                                                        minDate={new Date(fromMin)}
+                                                        filterDate={(date) => {
+                                                            const day = date.getDay();
+                                                            return day !== 0 && day !== 6;
+                                                        }}
+                                                        wrapperClassName="w-100"
+                                                    />
                                                     {errorsList.fromDate && <div style={{ color: theme.danger, fontSize: "12px" }}>{errorsList.fromDate}</div>}
                                                 </div>
                                                 <div style={{ flex: 1 }}>
                                                     <label style={styles.label}>To Date</label>
-                                                    <input className="modern-input" type="date" value={toDate} onChange={(e) => handleToDateChange(e.target.value)} min={toMin} max={toMax} />
+                                                    <DatePicker
+                                                        selected={toDate ? new Date(toDate) : null}
+                                                        onChange={(date) => {
+                                                            if (date) {
+                                                                const offset = date.getTimezoneOffset()
+                                                                const localDate = new Date(date.getTime() - (offset * 60 * 1000))
+                                                                const val = localDate.toISOString().split('T')[0]
+                                                                handleToDateChange(val)
+                                                            } else {
+                                                                handleToDateChange("")
+                                                            }
+                                                        }}
+                                                        dateFormat="yyyy-MM-dd"
+                                                        className="modern-input"
+                                                        placeholderText="YYYY-MM-DD"
+                                                        minDate={new Date(toMin)}
+                                                        maxDate={toMax ? new Date(toMax) : null}
+                                                        filterDate={(date) => {
+                                                            const day = date.getDay();
+                                                            return day !== 0 && day !== 6;
+                                                        }}
+                                                        wrapperClassName="w-100"
+                                                    />
                                                     {errorsList.toDate && <div style={{ color: theme.danger, fontSize: "12px" }}>{errorsList.toDate}</div>}
                                                 </div>
                                             </div>

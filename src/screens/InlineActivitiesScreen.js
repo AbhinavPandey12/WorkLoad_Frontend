@@ -7,6 +7,8 @@ import { theme } from "../utils/theme"
 import Loader from "../components/Loader"
 import CreatableSelect from "../components/CreatableSelect"
 import { Row, Col, Form, Card } from "react-bootstrap";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 // Simple SVG Icons
 const Icons = {
@@ -493,11 +495,28 @@ export default function InlineActivitiesScreen({ onLogout }) {
                                     </div>
                                     <div style={styles.editField}>
                                         <label style={styles.editLabel}>End Date</label>
-                                        <input
-                                            type="date"
-                                            style={styles.editInput}
-                                            value={formData.end_date}
-                                            onChange={e => setFormData({ ...formData, end_date: e.target.value })}
+                                        <DatePicker
+                                            selected={formData.end_date ? new Date(formData.end_date) : null}
+                                            onChange={(date) => {
+                                                if (date) {
+                                                    // Format to YYYY-MM-DD
+                                                    const offset = date.getTimezoneOffset()
+                                                    const localDate = new Date(date.getTime() - (offset * 60 * 1000))
+                                                    const val = localDate.toISOString().split('T')[0]
+                                                    setFormData({ ...formData, end_date: val })
+                                                } else {
+                                                    setFormData({ ...formData, end_date: "" })
+                                                }
+                                            }}
+                                            dateFormat="yyyy-MM-dd"
+                                            className="form-control"
+                                            placeholderText="YYYY-MM-DD"
+                                            filterDate={(date) => {
+                                                const day = date.getDay();
+                                                return day !== 0 && day !== 6;
+                                            }}
+                                            wrapperClassName="w-100"
+                                            customInput={<input style={styles.editInput} />}
                                         />
                                     </div>
                                     <div style={styles.editField}>
