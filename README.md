@@ -13,6 +13,7 @@ WorkLoad is a comprehensive Progressive Web Application (PWA) designed to simpli
 - **Notifications:** `react-toastify` (Toasters)
 - **PWA Features:** Service Workers, Web Push Notifications, Manifest
 - **Testing:** `jest`, `@testing-library/react`
+- **Deployment:** [Vercel](https://vercel.com/)
 
 ## 👥 User Roles & Workflows
 
