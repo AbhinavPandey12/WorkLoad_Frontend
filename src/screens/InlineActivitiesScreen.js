@@ -466,7 +466,7 @@ export default function InlineActivitiesScreen({ onLogout }) {
                                         />
                                     </div>
                                     <div style={styles.editField}>
-                                        <label style={styles.editLabel}>Leader Name</label>
+                                        <label style={styles.editLabel}>Project Leader Name</label>
                                         <input
                                             style={styles.editInput}
                                             value={formData.leader_name}
@@ -592,7 +592,7 @@ export default function InlineActivitiesScreen({ onLogout }) {
                                         <div style={styles.cardSubtitle}>
                                             <span style={{ display: "flex", alignItems: "center" }}>
                                                 <Icons.User />
-                                                <span style={{ marginRight: "4px" }}>Leader:</span> {p.manager_name}
+                                                <span style={{ marginRight: "4px" }}>Project Leader:</span> {p.manager_name}
                                             </span>
                                         </div>
 

@@ -244,7 +244,7 @@ export default function ActivitiesScreen({ onLogout }) {
                                     </Form.Group>
 
                                     <Form.Group className="mb-3">
-                                        <Form.Label className="fw-semibold">Leader</Form.Label>
+                                        <Form.Label className="fw-semibold">Project Leader</Form.Label>
                                         <Form.Control
                                             name="leader_name"
                                             value={formData.leader_name}
@@ -372,7 +372,7 @@ export default function ActivitiesScreen({ onLogout }) {
                                             <thead className="bg-light">
                                                 <tr>
                                                     <th className="border-0">Project</th>
-                                                    <th className="border-0">Leader</th>
+                                                    <th className="border-0">Project Leader</th>
                                                     <th className="border-0">Status</th>
                                                     <th className="border-0 text-end">Actions</th>
                                                 </tr>
