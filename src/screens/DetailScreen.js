@@ -18,8 +18,8 @@ export default function DetailScreen({ employee = null, onBack, onSaveDetails, o
     const [toDate, setToDate] = useState("")
     const [workingDays, setWorkingDays] = useState(["Mon", "Tue", "Wed", "Thu", "Fri"]) // Default all
 
-    // Skills (Technical Interests are now Skills)
     const [skills, setSkills] = useState([])
+    const [interests, setInterests] = useState([])
     const [previousProjects, setPreviousProjects] = useState([]) 
     const [currentPreviousInput, setCurrentPreviousInput] = useState("")
 
@@ -152,15 +152,15 @@ export default function DetailScreen({ employee = null, onBack, onSaveDetails, o
     // populate detail fields from employee prop
     useEffect(() => {
         if (!employee) return
-                setCurrentProject(employee.current_project || "")
+        setCurrentProject(employee.current_project || employee.currentProject || "")
 
-                setAvailability(employee.availability || "Occupied")
+        setAvailability(employee.availability || "Occupied")
         setHoursAvailable(employee.hours_available || "")
         setFromDate(employee.from_date ? employee.from_date.split("T")[0] : "")
         setToDate(employee.to_date ? employee.to_date.split("T")[0] : "")
         
-        const combined = [...new Set([...parseListField(employee.current_skills), ...parseListField(employee.interests)])]
-        setSkills(combined)
+        setSkills(parseListField(employee.current_skills))
+        setInterests(parseListField(employee.interests))
         setPreviousProjects(parseListField(employee.previous_projects))
         if(employee.working_days) setWorkingDays(employee.working_days)
         setLoading(false)
@@ -177,14 +177,14 @@ export default function DetailScreen({ employee = null, onBack, onSaveDetails, o
                 if (!res.ok) return
                 const obj = await res.json()
                 
-                setCurrentProject(obj.current_project || "")
+                setCurrentProject(obj.current_project || obj.currentProject || "")
                 setAvailability(obj.availability || "Occupied")
                 setHoursAvailable(obj.hours_available || "")
                 setFromDate(obj.from_date ? obj.from_date.split("T")[0] : "")
                 setToDate(obj.to_date ? obj.to_date.split("T")[0] : "")
                 
-                const combined = [...new Set([...parseListField(obj.current_skills), ...parseListField(obj.interests)])]
-                setSkills(combined)
+                setSkills(parseListField(obj.current_skills))
+                setInterests(parseListField(obj.interests))
                 setPreviousProjects(parseListField(obj.previous_projects))
                 if(obj.working_days) setWorkingDays(obj.working_days)
             } catch (e) {
@@ -220,6 +220,15 @@ export default function DetailScreen({ employee = null, onBack, onSaveDetails, o
             return
         }
 
+        // Validate current project is from dropdown (if not empty)
+        if (currentProject && currentProject.trim()) {
+            const exists = allProjects.some(p => p.toLowerCase() === currentProject.toLowerCase());
+            if (!exists) {
+                setError("Invalid Project: Please select a project from the synced dropdown list only.");
+                return;
+            }
+        }
+
         setSavingState(true)
         try {
             const payload = {
@@ -229,6 +238,8 @@ export default function DetailScreen({ employee = null, onBack, onSaveDetails, o
                 from_date: availability === "Partially Available" ? (fromDate || null) : null,
                 to_date: availability === "Partially Available" ? (toDate || null) : null,
                 current_skills: skills,
+                interests: interests,
+                previous_projects: previousProjects,
                 working_days: workingDays,
                 updated_at: new Date().toISOString(),
             }
@@ -281,6 +292,12 @@ export default function DetailScreen({ employee = null, onBack, onSaveDetails, o
             prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]
         )
     }
+
+    const addInterest = (i) => {
+        if (!i) return
+        if (!interests.includes(i)) setInterests((prev) => [...prev, i])
+    }
+    const removeInterest = (i) => setInterests((prev) => prev.filter((x) => x !== i))
 
     // validation
     const errorsList = {
@@ -396,13 +413,17 @@ export default function DetailScreen({ employee = null, onBack, onSaveDetails, o
                                         <CreatableSelect
                                             options={allProjects}
                                             value={currentProject}
+                                            creatable={false}
                                             onChange={(e) => {
                                                 const val = e.target.value
                                                 setCurrentProject(val)
                                                 if (val && availability === "Available") setAvailability("Occupied")
                                             }}
-                                            placeholder="e.g. Project Alpha"
+                                            placeholder="Select Project..."
                                         />
+                                        <div style={{ fontSize: "11px", color: "#6c757d", marginTop: "8px", fontStyle: "italic" }}>
+                                            You can only select projects from the dropdown that are in sync with inline activities.
+                                        </div>
                                     </div>
                                     <div style={{...styles.formGroup, marginTop: "20px"}}>
                                         <label style={styles.label}>Availability</label>
@@ -539,6 +560,40 @@ export default function DetailScreen({ employee = null, onBack, onSaveDetails, o
                                 </div>
 
                                 <div className="responsive-card">
+                                    <div style={styles.sectionTitle}>Interests</div>
+                                    <div style={styles.formGroup}>
+                                        <div style={styles.tagInputContainer}>
+                                            <input
+                                                id="interestInput"
+                                                placeholder="Add an interest..."
+                                                className="modern-input"
+                                                style={styles.flexInput}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === "Enter") {
+                                                        e.preventDefault()
+                                                        const val = e.target.value.trim()
+                                                        if (val) addInterest(val)
+                                                        e.target.value = ""
+                                                    }
+                                                }}
+                                            />
+                                            <button type="button" onClick={() => {
+                                                const el = document.getElementById("interestInput")
+                                                if (el && el.value.trim()) { addInterest(el.value.trim()); el.value = ""; }
+                                            }} style={styles.addBtn}>Add</button>
+                                        </div>
+                                        <div style={styles.tagsWrapper}>
+                                            {interests.map(i => (
+                                                <div key={i} style={{...styles.tag, background: "#f3e5f5", color: "#7b1fa2", borderColor: "#e9d5ff" }}>
+                                                    {i}
+                                                    <button onClick={() => removeInterest(i)} style={{...styles.removeTagBtn, color: "#7b1fa2"}}>×</button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="responsive-card">
                                     <div style={styles.sectionTitle}>Previous Projects</div>
                                     <div style={styles.formGroup}>
                                         <div style={styles.tagInputContainer}>
@@ -578,4 +633,3 @@ export default function DetailScreen({ employee = null, onBack, onSaveDetails, o
         </div>
     )
 }
-

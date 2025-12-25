@@ -39,7 +39,11 @@ export default function HomeScreen({ onLogout, employee }) {
 
       // Filter out Managers AND apply expiry logic
       const sanitizedData = data
-        .filter(emp => (emp.role_type || "").toLowerCase() !== "manager")
+        .filter(emp => {
+          const rt = (emp.role_type || "").toLowerCase();
+          const email = (emp.email || "").toLowerCase();
+          return rt !== "manager" && !email.includes("manager");
+        })
         .map((emp) => {
           const av = (emp.availability || "").toLowerCase()
           if (av === "partially available" || av.includes("partial")) {

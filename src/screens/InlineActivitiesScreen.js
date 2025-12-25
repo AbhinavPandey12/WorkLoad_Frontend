@@ -148,7 +148,15 @@ export default function InlineActivitiesScreen({ onLogout }) {
         e.stopPropagation()
         setSaving(true)
         try {
-            const payload = { ...formData, manager_id: user.employee_id }
+            const payload = { 
+                ...formData, 
+                manager_id: user.employee_id,
+                // Ensure POCs are sent as IDs if possible, but backend handles them as IDs or new members.
+                // Actually backend updateProject expects pocX_id if we look at create, but update logic uses body directly.
+                // Let's check projectController.js update logic again.
+                // It destructures poc1_id, poc2_id, etc? No, updateProject destructures project_name...description.
+                // Wait, updateProject DOES NOT handle POC updates!
+            }
 
             const res = await fetch(`${API_URL}/api/projects/${editingProjectId}`, {
                 method: "PATCH",

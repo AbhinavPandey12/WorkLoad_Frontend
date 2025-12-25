@@ -198,7 +198,7 @@ export default function ActivitiesScreen({ onLogout }) {
             poc2: selectedProject.poc2 || null,
             poc3: selectedProject.poc3 || null
         })
-        setEditingId(selectedProject.id)
+        setEditingId(selectedProject.project_id)
         setShowActionModal(false)
         window.scrollTo({ top: 0, behavior: 'smooth' })
     }
@@ -210,7 +210,7 @@ export default function ActivitiesScreen({ onLogout }) {
             setShowActionModal(false)
             return
         }
-        handleDelete(selectedProject.id)
+        handleDelete(selectedProject.project_id)
         setShowActionModal(false)
     }
 
@@ -360,6 +360,7 @@ export default function ActivitiesScreen({ onLogout }) {
                         <Card className="shadow-sm border-0 h-100" style={{ borderRadius: "4px" }}>
                             <Card.Header className="bg-white border-bottom-0 pt-4 pb-0">
                                 <h4 className="fw-bold text-dark mb-0">Existing Activities</h4>
+                                <small className="text-muted">A manager can edit only the projects they have created</small>
                             </Card.Header>
                             <Card.Body>
                                 {loading ? (
@@ -379,14 +380,14 @@ export default function ActivitiesScreen({ onLogout }) {
                                             </thead>
                                             <tbody>
                                                 {projects.map((p) => (
-                                                    <tr key={p.id} onClick={() => handleRowClick(p)} style={{ cursor: "pointer" }}>
+                                                    <tr key={p.project_id} onClick={() => handleRowClick(p)} style={{ cursor: "pointer" }}>
                                                         <td className="fw-bold text-primary">{p.project_name}</td>
                                                         <td className="text-muted small">{p.manager_name}</td>
                                                         <td onClick={(e) => e.stopPropagation()}>
                                                             <Form.Select
                                                                 size="sm"
                                                                 value={p.status}
-                                                                onChange={(e) => handleStatusChange(p.id, e.target.value)}
+                                                                onChange={(e) => handleStatusChange(p.project_id, e.target.value)}
                                                                 disabled={String(p.manager_id) !== String(user?.employee_id)}
                                                                 style={{
                                                                     fontSize: "12px",
@@ -409,7 +410,7 @@ export default function ActivitiesScreen({ onLogout }) {
                                                                         variant="outline-danger"
                                                                         size="sm"
                                                                         className="border-0"
-                                                                        onClick={() => handleDelete(p.id)}
+                                                                        onClick={() => handleDelete(p.project_id)}
                                                                         title="Delete"
                                                                     >
                                                                         🗑️

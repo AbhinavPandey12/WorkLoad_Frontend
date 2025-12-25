@@ -850,7 +850,7 @@ export default function EmployeeCard({ employee = {}, getInitials, currentUser, 
                   </div>
                 </div>
                 {(!formData.current_project || !formData.current_project.trim()) && (
-                  <div style={{ fontSize: "11px", color: "#6b7280", marginTop: "4px", paddingLeft: "4px" }}>
+                  <div style={{ fontSize: "11px", fontStyle: "italic", color: "#d21414ff", paddingLeft: "4px" }}>
                     Requires Current Project to change availability
                   </div>
                 )}

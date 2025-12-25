@@ -7,6 +7,7 @@ const CreatableSelect = ({
     onChange,
     placeholder = "Select or type...",
     disabled = false,
+    creatable = true,
     className = "",
     style = {}
 }) => {
@@ -39,9 +40,23 @@ const CreatableSelect = ({
         function handleClickOutside(event) {
             if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
                 setIsOpen(false);
-                // Ensure the parent gets the final value if they haven't already
-                if (inputValue !== value) {
-                    onChange({ target: { value: inputValue } });
+                
+                if (!creatable) {
+                    // Force value from options if not creatable
+                    const match = options.find(opt => opt.toLowerCase() === (inputValue || "").toLowerCase());
+                    if (match) {
+                        setInputValue(match);
+                        if (match !== value) onChange({ target: { value: match } });
+                    } else {
+                        // Reset to previous valid value
+                        setInputValue(value || "");
+                        if (value === "" && inputValue !== "") onChange({ target: { value: "" } });
+                    }
+                } else {
+                    // Original creatable logic
+                    if (inputValue !== value) {
+                        onChange({ target: { value: inputValue } });
+                    }
                 }
             }
         }
@@ -49,7 +64,7 @@ const CreatableSelect = ({
         return () => {
             document.removeEventListener("mousedown", handleClickOutside);
         };
-    }, [inputValue, onChange, value]);
+    }, [inputValue, onChange, value, creatable, options]);
 
     const handleInputChange = (e) => {
         const val = e.target.value;
@@ -72,11 +87,22 @@ const CreatableSelect = ({
         if (e.key === 'Enter') {
             e.preventDefault();
             setIsOpen(false);
-            // Ensure value is committed
-            onChange({ target: { value: inputValue } });
+            
+            if (!creatable) {
+                const match = options.find(opt => opt.toLowerCase() === (inputValue || "").toLowerCase());
+                if (match) {
+                    setInputValue(match);
+                    onChange({ target: { value: match } });
+                } else {
+                    setInputValue(value || "");
+                }
+            } else {
+                onChange({ target: { value: inputValue } });
+            }
             inputRef.current.blur();
         } else if (e.key === 'Escape') {
             setIsOpen(false);
+            setInputValue(value || ""); // Revert on escape
             inputRef.current.blur();
         }
     };
@@ -164,9 +190,11 @@ const CreatableSelect = ({
                             </div>
                         ))
                     ) : (
-                        <div style={componentStyles.noOptions}>
-                            "{inputValue}" will be created
-                        </div>
+                        creatable && inputValue && (
+                            <div style={componentStyles.noOptions}>
+                                "{inputValue}" will be created
+                            </div>
+                        )
                     )}
                 </div>
             )}

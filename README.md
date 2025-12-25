@@ -20,7 +20,7 @@ WorkLoad is a comprehensive Progressive Web Application (PWA) designed to simpli
 ### For Managers
 - **Availability Tracking:** The **Manager Dashboard** provides a comprehensive view of all employee schedules, allowing managers to instantly visualize team capacity and individual availability.
 - **Inline Activities:** Managers can create and assign **Inline Activities**. These tasks appear on employee dashboards, ensuring clear communication of priorities.
-- **Performance Recognition:** Managers can award **Stars** to employees based on their performance and timely updates, fostering a gamified and motivating environment.
+- **Performance Recognition:** Managers can award **Stars** to employees based on their performance and timely updates, fostering a gamified and motivating environment. These stars represent the performance of the employee; in a year, an employee can receive a maximum of 100 stars.
 - **Data Integrity:** **Managers have full edit access** to any employee's profile, including projects, availability, and skills, ensuring data accuracy if an employee is unavailable.
 
 ### For Employees
@@ -80,6 +80,14 @@ workload_frontend/
 
 - **Authentication:** Routes are protected to ensure only logged-in users access the dashboard.
 - **Role-Based Access:** Specific views (like Manager Dashboard) are restricted based on user roles (`Manager` vs `Employee`).
+  
+  - **Managers:** Full access to view all employee availability data, create global "Inline Activities", and modify performance "Star" ratings.
+    - **Username:** `manager@workload.com/manager2@workload.com`
+    - **Password:** `manager`
+  
+  - **Employees:** Read-only access to Manager-created activities; write access is strictly limited to their own personal availability and status.
+    - **Username:** `employee@workload.com`
+    - **Password:** `employee`
 
 ## 🔗 Related Repositories
 

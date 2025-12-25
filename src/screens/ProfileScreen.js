@@ -36,6 +36,8 @@ export default function ProfileScreen({ employee = null, onBack, onSaveProfile, 
   // Cluster States
   const [clusterMode, setClusterMode] = useState("") // "Single" or "Multiple"
   const [selectedClusters, setSelectedClusters] = useState([])
+  
+  const [stars, setStars] = useState(0)
 
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState("")
@@ -57,6 +59,8 @@ export default function ProfileScreen({ employee = null, onBack, onSaveProfile, 
     const clusters = employee.clusters || [];
     setSelectedClusters(clusters);
     setClusterMode(clusters.length > 1 ? "Multiple" : "Single");
+    
+    setStars(employee.stars || 0);
   }, [employee])
 
   // Non-destructive background refresh
@@ -79,6 +83,10 @@ export default function ProfileScreen({ employee = null, onBack, onSaveProfile, 
           if (obj.clusters && obj.clusters.length > 0) {
             setSelectedClusters(obj.clusters);
             setClusterMode(obj.clusters.length > 1 ? "Multiple" : "Single");
+          }
+          
+          if (obj.stars !== undefined) {
+             setStars(obj.stars);
           }
 
         } catch (e) {
@@ -384,7 +392,7 @@ export default function ProfileScreen({ employee = null, onBack, onSaveProfile, 
             <div style={styles.starsContainer}>
                 <span className="text-secondary small fw-bold text-uppercase" style={{ letterSpacing: "1px", fontSize: "11px" }}>Reputation</span>
                 <span style={{ width: "1px", height: "20px", background: "#e5e7eb", margin: "0 4px" }}></span>
-                <span style={styles.starCount}>{employee?.stars || 0}</span>
+                <span style={styles.starCount}>{stars}</span>
                 <IconStar />
             </div>
           </div>
