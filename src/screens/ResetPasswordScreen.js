@@ -81,6 +81,10 @@ export default function ResetPasswordScreen({ user, onLogout }) {
                     <Card.Body className="p-4">
                         {/* Heading removed */}
 
+                        <div className="alert alert-info text-center mb-4" style={{ borderRadius: "0px", fontSize: "14px" }}>
+                            <strong>Note:</strong> Reset Password is currently disabled to ensure uninterrupted access for all users.
+                        </div>
+
                         <Form onSubmit={handleSubmit}>
                             <Form.Group className="mb-3">
                                 <Form.Label className="fw-semibold">Current Password</Form.Label>
@@ -89,7 +93,7 @@ export default function ResetPasswordScreen({ user, onLogout }) {
                                     value={currentPassword}
                                     onChange={(e) => setCurrentPassword(e.target.value)}
                                     placeholder="Enter current password"
-                                    disabled={loading}
+                                    disabled={true}
                                     className="rounded-0"
                                 />
                             </Form.Group>
@@ -101,7 +105,7 @@ export default function ResetPasswordScreen({ user, onLogout }) {
                                     value={newPassword}
                                     onChange={(e) => setNewPassword(e.target.value)}
                                     placeholder="Enter new password"
-                                    disabled={loading}
+                                    disabled={true}
                                     className="rounded-0"
                                 />
                             </Form.Group>
@@ -113,7 +117,7 @@ export default function ResetPasswordScreen({ user, onLogout }) {
                                     value={confirmPassword}
                                     onChange={(e) => setConfirmPassword(e.target.value)}
                                     placeholder="Confirm new password"
-                                    disabled={loading}
+                                    disabled={true}
                                     className="rounded-0"
                                 />
                             </Form.Group>
@@ -121,32 +125,19 @@ export default function ResetPasswordScreen({ user, onLogout }) {
                             <button
                                 type="submit"
                                 className="btn w-100 fw-bold py-2"
-                                disabled={loading}
+                                disabled={true}
                                 style={{
-                                    backgroundColor: "#2563eb",
+                                    backgroundColor: "#6c757d",
                                     color: "#ffffff",
                                     borderRadius: "8px",
                                     border: "none",
                                     padding: "12px",
                                     fontSize: "14px",
                                     letterSpacing: "0.5px",
-                                    boxShadow: "0 4px 6px rgba(37, 99, 235, 0.2)",
-                                    transition: "all 0.2s ease"
-                                }}
-                                onMouseEnter={(e) => {
-                                    if (!loading) {
-                                        e.target.style.backgroundColor = "#1d4ed8";
-                                        e.target.style.transform = "translateY(-1px)";
-                                    }
-                                }}
-                                onMouseLeave={(e) => {
-                                    if (!loading) {
-                                        e.target.style.backgroundColor = "#2563eb";
-                                        e.target.style.transform = "translateY(0)";
-                                    }
+                                    cursor: "not-allowed"
                                 }}
                             >
-                                {loading ? <Spinner animation="border" size="sm" /> : "Update Password"}
+                                Update Password (Disabled)
                             </button>
                         </Form>
                     </Card.Body>

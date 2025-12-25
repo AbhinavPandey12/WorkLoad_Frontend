@@ -60,6 +60,16 @@ workload_frontend/
     ```
     The app will run in development mode at `http://localhost:3000`.
 
+## 🌐 Deployment Configuration (Vercel)
+
+When deploying the frontend to Vercel, you must configure the backend API URL:
+
+1.  **Vercel Dashboard:** Go to your Project Settings > **Environment Variables**.
+2.  **Add Variable:**
+    - **Key:** `REACT_APP_API_URL`
+    - **Value:** `https://your-deployed-backend-url.com` (Replace with your actual backend URL).
+3.  **Redeploy:** Trigger a new deployment for the changes to take effect.
+
 ## 📜 Scripts
 
 - `npm start`: Runs the app in development mode.
@@ -92,3 +102,6 @@ workload_frontend/
 ## 🔗 Related Repositories
 
 - **Backend Repository:** [WorkLoad_Backend](https://github.com/AbhinavPandey12/WorkLoad_Backend)
+
+> [!NOTE]
+> Reset Password is currently disabled to ensure uninterrupted access for all users.
