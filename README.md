@@ -2,7 +2,7 @@
 
 # WorkLoad - PWA Frontend
 
-WorkLoad is a comprehensive Progressive Web Application (PWA) designed to simplify employee availability management and project tracking. This frontend client provides an intuitive and responsive interface for both employees and managers, enabling efficient logging of hours, real-time updates, and capacity planning.
+WorkLoad is a comprehensive Progressive Web Application (PWA) designed to simplify employee availability management and project tracking. The app is installable as a Progressive Web app and have push notifications (node web push). This frontend client provides an intuitive and responsive interface for both employees and managers, enabling efficient logging of hours, real-time updates, and capacity planning.
 
 ## 🚀 Tech Stack
 

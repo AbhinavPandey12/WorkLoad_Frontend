@@ -19,6 +19,7 @@ export default function App() {
   // PWA Install Prompt State
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showInstallPopup, setShowInstallPopup] = useState(false);
+  const [pwaDismissed, setPwaDismissed] = useState(false); // New: track dismissal
 
   // initialize from sessionStorage so reload keeps logged-in user
   const initialUser = (() => {
@@ -65,11 +66,13 @@ export default function App() {
 
   const handleClosePopup = () => {
     setShowInstallPopup(false);
+    setPwaDismissed(true); // mark as dismissed for this session
     checkNotificationPermission();
   };
 
   // Notification Popup State
   const [showNotificationPopup, setShowNotificationPopup] = useState(false);
+  const [notificationsDismissed, setNotificationsDismissed] = useState(false); // New: track dismissal
 
   // Check notification permission queue
   const checkNotificationPermission = React.useCallback(() => {
@@ -87,11 +90,11 @@ export default function App() {
     // Usually "Cancel" means "Not now", so it might show again. 
     // "Accepted" means permission 'granted'.
 
-    // Double check we are not already showing it
-    if (showNotificationPopup) return;
+    // Double check we are not already showing it or already dismissed
+    if (showNotificationPopup || notificationsDismissed) return;
 
     setShowNotificationPopup(true);
-  }, [user, showNotificationPopup]);
+  }, [user, showNotificationPopup, notificationsDismissed]);
 
   const handleEnableNotifications = async () => {
     if (user && user.employee_id) {
@@ -102,6 +105,7 @@ export default function App() {
 
   const handleCancelNotifications = () => {
     setShowNotificationPopup(false);
+    setNotificationsDismissed(true); // mark as dismissed for this session
   }
 
   // Check if we should show the popup
@@ -118,17 +122,13 @@ export default function App() {
 
 
   React.useEffect(() => {
-    if (deferredPrompt && user) {
+    if (deferredPrompt && user && !pwaDismissed) {
       setShowInstallPopup(true);
     } else if (user) {
-      // If no install prompt needed (already installed or not supported), check notification immediately
-      // But wait a tick to ensure install prompt effect didn't just fire
-      const t = setTimeout(() => {
-        if (!showInstallPopup) checkNotificationPermission();
-      }, 1000);
-      return () => clearTimeout(t);
+      // If no install prompt needed or dismissed, check notification
+      checkNotificationPermission();
     }
-  }, [deferredPrompt, user, showInstallPopup, checkNotificationPermission]);
+  }, [deferredPrompt, user, pwaDismissed, checkNotificationPermission]);
 
   const handleLogin = (userData) => {
     try {
